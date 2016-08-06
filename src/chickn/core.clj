@@ -1,7 +1,36 @@
 (ns chickn.core)
 
-(defn rank [{f :fitness} pop]
-  (map f pop))
+(defn- mean [coll]
+  (let [sum (apply + coll)
+        count (count coll)]
+    (if (pos? count)
+      (/ sum count)
+      0)))
+
+(defn- std-dev [coll]
+  (let [avg (mean coll)
+        squares (for [x coll]
+                  (let [x-avg (- x avg)]
+                    (* x-avg x-avg)))
+        total (count coll)]
+    (-> (/ (apply + squares)
+           (- total 1))
+      (Math/sqrt))))
+
+(defn eval-pop [{f :fitness} pop]
+  (let [pop (->> pop :pop (map :genes))
+        pop (mapv (fn [i] {:fitness (f i)
+                       :genes   i}) pop)
+        pop (sort-by :fitness #(compare %2 %1) pop)
+        pop-avg (mean (map :fitness pop))
+        std-dev (std-dev (map :fitness pop))
+        best-fitness (:fitness (first pop))
+        best-chromo (:genes (first pop))]
+    {:pop-avg pop-avg
+     :std-dev std-dev
+     :best-fitness best-fitness
+     :best-chromo best-chromo
+     :pop pop}))
 
 (defn crossover
   ([c1 c2] (crossover rand-int 1 c1 c2))
