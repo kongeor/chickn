@@ -1,6 +1,6 @@
 (ns chickn.core-test
-  (:require [clojure.test :refer :all]
-            [chickn.core :refer :all]))
+  (:require [clojure.test :refer [deftest testing is]]
+            [chickn.core :refer [eval-pop crossover]]))
 
 (deftest eval-pop-test
   (let [pop {:pop [{:genes [0 0 1 1]}
