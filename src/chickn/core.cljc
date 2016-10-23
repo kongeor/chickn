@@ -45,3 +45,33 @@
          (if (seq c1)
            (recur (conj nc1 (first c1)) (conj nc2 (first c2)) (inc i) (next c1) (next c2))
            [nc1 nc2]))))))
+
+(defn roulette
+  [{:keys [rf]} pop]
+  (let [total-fitness (->> pop (map :fitness) (apply +))
+        roulette-pos (* (rf) total-fitness)
+        pop-cnt (count pop)]
+    (loop [w 0
+           i 0]
+      (if (>= i (dec pop-cnt))
+        (first pop)
+        (let [c (nth pop i)
+              w (+ w (:fitness c))]
+          (if (> w roulette-pos)
+            c
+            (recur w (inc i))))))))
+
+(comment
+  (let [pop [{:genes [0 0 1 2]
+              :fitness 3}
+             {:genes [0 0 1 1]
+              :fitness 2}
+             {:genes [0 1 0 0]
+              :fitness 1}]]
+    (clojure.pprint/pprint (roulette {:rf rand} pop))))
+
+(defn evolve [cfg pop]
+  )
+
+(defn square [x] (* x x))
+
