@@ -54,7 +54,7 @@
 
 (defn roulette
   "Operates on a shuffled population"
-  [{:keys [rf]} pop]
+  [{:keys [rf]} {pop :pop}]
   (let [total-fitness (->> pop (map :fitness) (apply +))
         roulette-pos (* (rf) total-fitness)
         pop-cnt (count pop)]
@@ -75,7 +75,20 @@
                     offspring (first (crossover parent other))]
                 (conj new-pop offspring))
               (conj new-pop parent)))
-          [] pop))
+          [] (:pop pop)))
+
+(defn evolve [cfg pop]
+  (mutate cfg (breed-pop cfg pop)))
+
+(defn evolven [{:keys [terminated? fitness] :as cfg} pop n]
+  (loop [i 0
+         pop pop]
+    (let [pop (eval-pop cfg pop)
+          best (first pop)]
+      (println "Iteration:" i "Best Chromosome:" (:best-chromo best) "Fitness:" (:best-fitness pop))
+      (if (or (>= i n) (terminated? best))
+        best
+        (recur (inc i) (evolve cfg pop))))))
 
 (comment
   (let [pop [{:genes [0 0 1 2]

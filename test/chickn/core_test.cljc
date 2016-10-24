@@ -38,12 +38,12 @@
              (crossover rf ps c1 c2))))))
 
 (deftest roulette-test
-  (let [pop [{:genes [0 0 1 2]
-              :fitness 3}
-             {:genes [0 0 1 1]
-              :fitness 2}
-             {:genes [0 1 0 0]
-              :fitness 1}]]
+  (let [pop {:pop [{:genes   [0 0 1 2]
+                    :fitness 3}
+                   {:genes   [0 0 1 1]
+                    :fitness 2}
+                   {:genes   [0 1 0 0]
+                    :fitness 1}]}]
     (testing "roulette matching"
       (let [rf (let [i (atom 0)]
                  (fn [& _]
@@ -78,14 +78,14 @@
            (mutate {:mutation-rate 0.5 :rf rf :mf mf} c)))))
 
 (deftest breed-pop-test
-  (let [pop [{:genes [2 2 0 0]
-              :fitness 4}
-             {:genes [0 0 1 2]
-              :fitness 3}
-             {:genes [0 0 1 1]
-              :fitness 2}
-             {:genes [0 1 0 0]
-              :fitness 1}]]
+  (let [pop {:pop [{:genes   [2 2 0 0]
+                    :fitness 4}
+                   {:genes   [0 0 1 2]
+                    :fitness 3}
+                   {:genes   [0 0 1 1]
+                    :fitness 2}
+                   {:genes   [0 1 0 0]
+                    :fitness 1}]}]
     (testing "breeding"
       (let [rf (let [i (atom 0)]
                  (fn [& _]
