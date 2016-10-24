@@ -35,7 +35,7 @@
 (defn crossover
   ([c1 c2] (crossover rand-int 1 c1 c2))
   ([rf ps c1 c2]
-   (let [ps (set (take ps (repeatedly #(rf c1))))]
+   (let [ps (set (repeatedly ps #(rf (count c1))))]
      (loop [nc1 []
             nc2 []
             i 0
@@ -47,6 +47,7 @@
            [nc1 nc2]))))))
 
 (defn roulette
+  "Operates on a shuffled population"
   [{:keys [rf]} pop]
   (let [total-fitness (->> pop (map :fitness) (apply +))
         roulette-pos (* (rf) total-fitness)
@@ -61,6 +62,15 @@
             c
             (recur w (inc i))))))))
 
+(defn breed-pop [{:keys [rf crossover-rate crossover] :as cfg} pop]
+  (reduce (fn [new-pop {parent :genes}]
+            (if (> (rf) crossover-rate)
+              (let [other (:genes (roulette cfg pop))
+                    offspring (first (crossover parent other))]
+                (conj new-pop offspring))
+              (conj new-pop parent)))
+          [] pop))
+
 (comment
   (let [pop [{:genes [0 0 1 2]
               :fitness 3}
@@ -70,8 +80,6 @@
               :fitness 1}]]
     (clojure.pprint/pprint (roulette {:rf rand} pop))))
 
-(defn evolve [cfg pop]
-  )
-
-(defn square [x] (* x x))
+(comment
+  (crossover rand-int 1 [0 0 1 2] [0 0 1 2]))
 
