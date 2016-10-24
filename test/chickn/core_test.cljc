@@ -1,7 +1,8 @@
 (ns chickn.core-test
   (:require [clojure.test :refer [deftest testing is]]
             [chickn.core :refer [eval-pop crossover roulette
-                                 breed-pop mutate raw-pop->pop]]))
+                                 breed-pop mutate raw-pop->pop
+                                 gen-pop]]))
 
 (deftest eval-pop-test
   (let [pop {:pop [{:genes [0 0 1 1]}
@@ -113,3 +114,10 @@
                     {:genes [0 0 0 0]}
                     {:genes [0 1 0 0]}]}
              (raw-pop->pop pop))))))
+
+(deftest gen-pop-test
+  (testing "Genereting a random pop"
+    (is (= [[1 1 1 1]
+            [1 1 1 1]
+            [1 1 1 1]]
+           (gen-pop 3 4 (constantly 1))))))

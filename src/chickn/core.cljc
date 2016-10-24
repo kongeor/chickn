@@ -93,6 +93,9 @@
         best
         (recur (inc i) (evolve cfg pop))))))
 
+(defn gen-pop [pop-size chromo-size rf]
+  (partition chromo-size (repeatedly (* pop-size chromo-size) rf)))
+
 (comment
   (let [pop [{:genes [0 0 1 2]
               :fitness 3}
