@@ -77,10 +77,13 @@
               (conj new-pop parent)))
           [] (:pop pop)))
 
-(defn evolve [cfg pop]
-  (mutate cfg (breed-pop cfg pop)))
+(defn raw-pop->pop [pop]
+  {:pop (map (fn [c] {:genes c}) pop)})
 
-(defn evolven [{:keys [terminated? fitness] :as cfg} pop n]
+(defn evolve [cfg pop]
+  (raw-pop->pop (mutate cfg (breed-pop cfg pop))))
+
+(defn evolven [{:keys [terminated?] :as cfg} pop n]
   (loop [i 0
          pop pop]
     (let [pop (eval-pop cfg pop)
