@@ -46,6 +46,12 @@
            (recur (conj nc1 (first c1)) (conj nc2 (first c2)) (inc i) (next c1) (next c2))
            [nc1 nc2]))))))
 
+(defn mutate
+  "For each gene of chromo c if mutation-rate is above
+  the result of random function rf apply the function mf"
+  [{:keys [mutation-rate rf mf]} c]
+  (map #(if (> (rf) mutation-rate) (mf) %) c))
+
 (defn roulette
   "Operates on a shuffled population"
   [{:keys [rf]} pop]

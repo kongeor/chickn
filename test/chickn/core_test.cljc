@@ -1,6 +1,6 @@
 (ns chickn.core-test
   (:require [clojure.test :refer [deftest testing is]]
-            [chickn.core :refer [eval-pop crossover roulette breed-pop]]))
+            [chickn.core :refer [eval-pop crossover roulette breed-pop mutate]]))
 
 (deftest eval-pop-test
   (let [pop {:pop [{:genes [0 0 1 1]}
@@ -64,6 +64,18 @@
                      0.1)))]
         (is {:genes [0 0 1 1] :fitness 3}
             (roulette {:rf rf} pop))))))
+
+(deftest mutation-test
+  (let [c [0 0 0 0]
+        rf (let [i (atom 0)]
+             (fn [& _]
+               (swap! i inc)
+               (if (= 2 @i)
+                 0.9
+                 0.1)))
+        mf (constantly 1)]
+    (is (= [0 1 0 0]
+           (mutate {:mutation-rate 0.5 :rf rf :mf mf} c)))))
 
 (deftest breed-pop-test
   (let [pop [{:genes [2 2 0 0]
