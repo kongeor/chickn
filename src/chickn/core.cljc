@@ -81,14 +81,14 @@
   {:pop (map (fn [c] {:genes c}) pop)})
 
 (defn evolve [cfg pop]
-  (raw-pop->pop (mutate cfg (breed-pop cfg pop))))
+  (raw-pop->pop (map (partial mutate cfg) (breed-pop cfg pop))))
 
 (defn evolven [{:keys [terminated?] :as cfg} pop n]
   (loop [i 0
          pop pop]
     (let [pop (eval-pop cfg pop)
-          best (first pop)]
-      (println "Iteration:" i "Best Chromosome:" (:best-chromo best) "Fitness:" (:best-fitness pop))
+          best (:best-chromo pop)]
+      (println "Iteration:" i "Best Chromosome:" best "Fitness:" (:best-fitness pop))
       (if (or (>= i n) (terminated? best))
         best
         (recur (inc i) (evolve cfg pop))))))
@@ -97,13 +97,17 @@
   (partition chromo-size (repeatedly (* pop-size chromo-size) rf)))
 
 (comment
-  (let [pop [{:genes [0 0 1 2]
-              :fitness 3}
-             {:genes [0 0 1 1]
-              :fitness 2}
-             {:genes [0 1 0 0]
-              :fitness 1}]]
-    (clojure.pprint/pprint (roulette {:rf rand} pop))))
+  (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
+        pop (raw-pop->pop (gen-pop 30 32 one-or-zero))
+        terminated? (fn [c] (= 32 (apply + c)))
+        cfg {:terminated? terminated?
+             :crossover-rate 0.3
+             :mutation-rate 0.01
+             :crossover (partial crossover rand-int 1)
+             :mf one-or-zero
+             :fitness (fn [c] (apply + c))
+             :rf rand}]
+    (evolven cfg pop 1000)))
 
 (comment
   (crossover rand-int 1 [0 0 1 2] [0 0 1 2]))
