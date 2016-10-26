@@ -73,8 +73,8 @@
              (fn [& _]
                (swap! i inc)
                (if (= 2 @i)
-                 0.9
-                 0.1)))
+                 0.1
+                 0.9)))
         mf (constantly 1)]
     (is (= [0 1 0 0]
            (mutate {:mutation-rate 0.5 :rf rf :mf mf} c)))))
@@ -97,7 +97,7 @@
             crossover (partial crossover rf 1)]
         (is (= [[2 2 0 0]
                 [0 0 1 2]
-                [0 0 0 0]
+                [0 0 1 1]
                 [0 1 0 0]]
                (breed-pop {:rf rf
                            :crossover-rate 1
