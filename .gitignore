@@ -12,3 +12,5 @@ pom.xml.asc
 
 .idea/
 *.iml
+out/
+resources/public/js
