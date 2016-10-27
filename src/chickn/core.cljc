@@ -92,32 +92,34 @@
       (let [pop (eval-pop cfg pop)
             best (:best-chromo pop)]
         (println "Iteration:" i "Fitness:" (:best-fitness pop) "Best Chromosome:" best )
-        (if (or (>= i n) (terminated? best))
-          best
-          (recur (inc i) (evolve cfg pop)))))))
+        (cond
+          (terminated? best) {:solved? true :best best}
+          (>= i n) false
+          :else (recur (inc i) (evolve cfg pop)))))))
 
 (defn gen-pop [pop-size chromo-size rf]
   (partition chromo-size (repeatedly (* pop-size chromo-size) rf)))
 
-(comment
+;--------------
+; Playground
+
+(defn all-ones-sample []
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         pop (raw-pop->pop (gen-pop 300 28 one-or-zero))
         terminated? (fn [c] (= 28 (apply + c)))
-        cfg {:terminated? terminated?
+        cfg {:terminated?    terminated?
              :crossover-rate 0.3
-             :mutation-rate 0.0001
-             :elitism-rate 0.2
-             :crossover (partial crossover rand-int 1)
-             :mf one-or-zero
-             :fitness (fn [c] (apply + c))
-             :rf rand}
-        cfg (assoc cfg :pop-size 300)
-        g1 (eval-pop cfg pop)
-        _ (clojure.pprint/pprint g1)
-        g2 (evolve cfg g1)
-        _ (evolven cfg pop 30000)
-        ]
-    #_(eval-pop cfg g2)))
+             :mutation-rate  0.0001
+             :elitism-rate   0.2
+             :crossover      (partial crossover rand-int 1)
+             :mf             one-or-zero
+             :fitness        (fn [c] (apply + c))
+             :rf             rand}
+        cfg (assoc cfg :pop-size 300)]
+    (evolven cfg pop 30000)))
+
+(comment
+  (all-ones-sample))
 
 (comment
   (crossover rand-int 1 [0 0 1 2] [0 0 1 2]))
