@@ -13,6 +13,7 @@
             :std-dev 1.0
             :age-avg 2.0
             :best-fitness 3
+            :iteration 1
             :best-chromo [0 0 1 2]
             :pop [{:genes [0 0 1 2]
                    :fitness 3
@@ -72,7 +73,7 @@
             (roulette {:random-func rf} pop))))))
 
 (deftest mutation-test
-  (let [c {:genes [0 0 0 0] :age 5}
+  (let [pop {:pop [{:genes [0 0 0 0] :age 5}]}
         rf (let [i (atom 0)]
              (fn [& _]
                (swap! i inc)
@@ -80,8 +81,11 @@
                  0.1
                  0.9)))
         mf (constantly 1)]
-    (is (= {:genes [0 1 0 0] :age 5}
-           (mutate {:mutation-rate 0.5 :random-func rf :mutation-func mf} c)))))
+    (is (= {:pop [{:genes [0 1 0 0] :age 5}]}
+           (mutate {:mutation-rate 0.5
+                    :random-func rf
+                    :mutation-func mf
+                    :elitism-rate 0} pop)))))
 
 (deftest breed-pop-test
   (let [pop {:pop [{:genes   [2 2 0 0]
@@ -100,10 +104,10 @@
                      0.5)))
             crossover (partial crossover rf 1)]
         ;; FIXME
-        (is (= [{:genes [2 2 0 0] :age 0}
-                {:genes [0 0 1 2] :fitness 3}
-                {:genes [0 0 1 1] :age 0}
-                {:genes [0 1 0 0] :fitness 1}]
+        (is (= {:pop [{:genes [2 2 0 0] :age 0}
+                      {:genes [0 0 1 2] :fitness 3}
+                      {:genes [0 0 1 1] :age 0}
+                      {:genes [0 1 0 0] :fitness 1}]}
                (breed-pop {:pop-size       4
                            :elitism-rate   0
                            :random-func    rf

@@ -124,6 +124,12 @@
 (defn simple-print [{:keys [iteration best-fitness best-chromo]}]
   (println "Iter:" iteration "Fitness:" best-fitness "Best:" best-chromo))
 
+
+(def default-cfg {:crossover-rate 0.3
+                  :mutation-rate  0.05
+                  :elitism-rate   0.1
+                  :random-func    rand
+                  :reporter       simple-print})
 ;--------------
 ; Playground
 
@@ -131,15 +137,12 @@
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         pop (raw-pop->pop (gen-pop 30 28 one-or-zero))
         terminated? (fn [c] (= 28 (apply + c)))
-        cfg {:terminated?    terminated?
-             :crossover-rate 0.3
-             :mutation-rate  0.05
-             :elitism-rate   0.1
-             :crossover      (partial crossover rand-int 1)
-             :mutation-func  one-or-zero
-             :fitness        (fn [c] (apply + c))
-             :random-func    rand
-             :reporter       simple-print}]
+        cfg (merge
+              default-cfg
+              {:terminated?    terminated?
+               :crossover      (partial crossover rand-int 1)
+               :mutation-func  one-or-zero
+               :fitness        (fn [c] (apply + c))})]
     (evolven cfg pop 30000)))
 
 (comment
