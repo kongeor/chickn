@@ -5,38 +5,43 @@
                                  gen-pop]]))
 
 (deftest eval-pop-test
-  (let [pop {:pop [{:genes [0 0 1 1]}
-                   {:genes [0 0 1 2]}
+  (let [pop {:pop [{:genes [0 0 1 1] :age 1}
+                   {:genes [0 0 1 2] :age 2}
                    {:genes [0 1 0 0]}]}
         cfg {:fitness (fn [genes] (apply + genes))}]
-    (is (= {:pop-avg 2
+    (is (= {:pop-avg 2.0
             :std-dev 1.0
+            :age-avg 2.0
             :best-fitness 3
+            :iteration 1
             :best-chromo [0 0 1 2]
             :pop [{:genes [0 0 1 2]
-                   :fitness 3}
+                   :fitness 3
+                   :age 3}
                   {:genes [0 0 1 1]
-                   :fitness 2}
+                   :fitness 2
+                   :age 2}
                   {:genes [0 1 0 0]
-                   :fitness 1}]}
+                   :fitness 1
+                   :age 1}]}
            (eval-pop cfg pop)))))
 
 
 (deftest crossover-test
   (testing "one pointcut"
-    (let [c1 [1 2 3 4]
-          c2 [5 6 7 8]
+    (let [c1 {:genes [1 2 3 4]}
+          c2 {:genes [5 6 7 8]}
           ps 1
           rf (fn [& _] 2)]
-      (is (= [[1 2 7 8] [5 6 3 4]]
+      (is (= [{:genes [1 2 7 8] :age 0} {:genes [5 6 3 4] :age 0}]
              (crossover rf ps c1 c2)))))
   (testing "two pointcuts"
-    (let [c1 [1 2 3 4 5]
-          c2 [5 6 7 8 9]
+    (let [c1 {:genes [1 2 3 4 5]}
+          c2 {:genes [5 6 7 8 9]}
           ps 2
           rf (let [i (atom 0)]
                (fn [& _] (swap! i + 2)))]
-      (is (= [[1 2 7 8 5] [5 6 3 4 9]]
+      (is (= [{:genes [1 2 7 8 5] :age 0} {:genes [5 6 3 4 9] :age 0}]
              (crossover rf ps c1 c2))))))
 
 (deftest roulette-test
@@ -55,7 +60,7 @@
                        0.5)
                      0.9)))]
         (is {:genes [0 0 1 1] :fitness 2}
-            (roulette {:rf rf} pop))))
+            (roulette {:random-func rf} pop))))
     (testing "fallback"
       (let [rf (let [i (atom 0)]
                  (fn [& _]
@@ -65,10 +70,10 @@
                        0.99999)
                      0.1)))]
         (is {:genes [0 0 1 1] :fitness 3}
-            (roulette {:rf rf} pop))))))
+            (roulette {:random-func rf} pop))))))
 
 (deftest mutation-test
-  (let [c [0 0 0 0]
+  (let [pop {:pop [{:genes [0 0 0 0] :age 5}]}
         rf (let [i (atom 0)]
              (fn [& _]
                (swap! i inc)
@@ -76,8 +81,11 @@
                  0.1
                  0.9)))
         mf (constantly 1)]
-    (is (= [0 1 0 0]
-           (mutate {:mutation-rate 0.5 :rf rf :mf mf} c)))))
+    (is (= {:pop [{:genes [0 1 0 0] :age 5}]}
+           (mutate {:mutation-rate 0.5
+                    :random-func rf
+                    :mutation-func mf
+                    :elitism-rate 0} pop)))))
 
 (deftest breed-pop-test
   (let [pop {:pop [{:genes   [2 2 0 0]
@@ -92,16 +100,19 @@
       (let [rf (let [i (atom 0)]
                  (fn [& _]
                    (if (= 0 (mod (swap! i inc) 2))
-                     1
-                     2)))
+                     2
+                     0.5)))
             crossover (partial crossover rf 1)]
-        (is (= [[2 2 0 0]
-                [0 0 1 2]
-                [0 0 1 1]
-                [0 1 0 0]]
-               (breed-pop {:rf rf
+        ;; FIXME
+        (is (= {:pop [{:genes [2 2 0 0] :age 0}
+                      {:genes [0 0 1 2] :fitness 3}
+                      {:genes [0 0 1 1] :age 0}
+                      {:genes [0 1 0 0] :fitness 1}]}
+               (breed-pop {:pop-size       4
+                           :elitism-rate   0
+                           :random-func    rf
                            :crossover-rate 1
-                           :crossover crossover} pop)))))))
+                           :crossover      crossover} pop)))))))
 
 (deftest raw-pop->pop-test
   (testing "Conversion"
