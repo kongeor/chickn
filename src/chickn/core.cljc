@@ -39,8 +39,8 @@
 
 (defn crossover
   ([c1 c2] (crossover rand-int 1 c1 c2))
-  ([rf ps {c1 :genes} {c2 :genes}]
-   (let [ps (set (repeatedly ps #(rf (count c1))))]
+  ([random-func ps {c1 :genes} {c2 :genes}]
+   (let [ps (set (repeatedly ps #(random-func (count c1))))]
      (loop [nc1 []
             nc2 []
             i 0
@@ -54,20 +54,22 @@
 (defn mutate
   "For each gene of chromo c if mutation-rate is above
   the result of random function rf apply the function mf"
-  [{:keys [mutation-rate rf mf elitism-rate]} pop]
+  [{:keys [mutation-rate random-func mutation-func elitism-rate]} pop]
   (let [pop-size (-> pop :pop count)
         mutants (map-indexed
                   (fn [i c]
-                    (if (>= (/ i pop-size) elitism-rate)    ;; TODO should mutation respect elitism?
-                      (assoc-in c [:genes] (mapv #(if (> mutation-rate (rf)) (mf) %) (:genes c)))
+                    (if (>= (/ i pop-size) elitism-rate)
+                      (assoc-in c [:genes] (mapv #(if (> mutation-rate (random-func))
+                                                   (mutation-func)
+                                                   %) (:genes c)))
                       c)) (:pop pop))]
     (assoc-in pop [:pop] mutants)))
 
 (defn roulette
   "Operates on a shuffled population"
-  [{:keys [rf]} {pop :pop}]
+  [{:keys [random-func]} {pop :pop}]
   (let [total-fitness (->> pop (map :fitness) (apply +))
-        roulette-pos (* (rf) total-fitness)
+        roulette-pos (* (random-func) total-fitness)
         pop-cnt (count pop)
         pop (shuffle pop)]
     (loop [w 0
@@ -80,11 +82,11 @@
             c
             (recur w (inc i))))))))
 
-(defn breed-pop [{:keys [rf crossover-rate crossover elitism-rate] :as cfg} pop]
+(defn breed-pop [{:keys [random-func crossover-rate crossover elitism-rate] :as cfg} pop]
   (let [pop-size (-> pop :pop count)
         new-gen (map-indexed
                   (fn [i parent]
-                    (if (and (> crossover-rate (rf)) (>= (/ i pop-size) elitism-rate))
+                    (if (and (> crossover-rate (random-func)) (>= (/ i pop-size) elitism-rate))
                       (let [other (roulette cfg pop)]
                         (first (crossover parent other)))
                       parent)) (:pop pop))]
@@ -134,9 +136,9 @@
              :mutation-rate  0.05
              :elitism-rate   0.1
              :crossover      (partial crossover rand-int 1)
-             :mf             one-or-zero
+             :mutation-func  one-or-zero
              :fitness        (fn [c] (apply + c))
-             :rf             rand
+             :random-func    rand
              :reporter       simple-print}]
     (evolven cfg pop 30000)))
 
