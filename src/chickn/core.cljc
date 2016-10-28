@@ -18,9 +18,11 @@
       (Math/sqrt))))
 
 (defn eval-pop [{fitness :fitness} pop]
-  (let [pop (mapv (fn [{:keys [genes age]}] {:fitness (fitness genes)
-                                             :genes genes
-                                             :age ((fnil inc 0) age)}) (:pop pop))
+  (let [iteration ((fnil inc 0) (:iteration pop))
+        pop (mapv (fn [{:keys [genes age]}]
+                    {:fitness (fitness genes)
+                     :genes genes
+                     :age ((fnil inc 0) age)}) (:pop pop))
         pop (sort-by :fitness #(compare %2 %1) pop)
         pop-avg (mean (map :fitness pop))
         std-dev (std-dev (map :fitness pop))
@@ -32,7 +34,8 @@
      :std-dev std-dev
      :best-fitness best-fitness
      :best-chromo best-chromo
-     :pop pop}))
+     :pop pop
+     :iteration iteration}))
 
 (defn crossover
   ([c1 c2] (crossover rand-int 1 c1 c2))
@@ -51,8 +54,14 @@
 (defn mutate
   "For each gene of chromo c if mutation-rate is above
   the result of random function rf apply the function mf"
-  [{:keys [mutation-rate rf mf]} c]
-  (assoc-in c [:genes] (mapv #(if (> mutation-rate (rf)) (mf) %) (:genes c))))
+  [{:keys [mutation-rate rf mf elitism-rate]} pop]
+  (let [pop-size (-> pop :pop count)
+        mutants (map-indexed
+                  (fn [i c]
+                    (if (>= (/ i pop-size) elitism-rate)    ;; TODO should mutation respect elitism?
+                      (assoc-in c [:genes] (mapv #(if (> mutation-rate (rf)) (mf) %) (:genes c)))
+                      c)) (:pop pop))]
+    (assoc-in pop [:pop] mutants)))
 
 (defn roulette
   "Operates on a shuffled population"
@@ -71,51 +80,64 @@
             c
             (recur w (inc i))))))))
 
-(defn breed-pop [{:keys [rf crossover-rate crossover pop-size elitism-rate] :as cfg} pop]
-  (map-indexed
-    (fn [i parent]
-      (if (and (> crossover-rate (rf)) (>= (/ i pop-size) elitism-rate))
-        (let [other (roulette cfg pop)]
-          (first (crossover parent other)))
-        parent)) (:pop pop)))
+(defn breed-pop [{:keys [rf crossover-rate crossover elitism-rate] :as cfg} pop]
+  (let [pop-size (-> pop :pop count)
+        new-gen (map-indexed
+                  (fn [i parent]
+                    (if (and (> crossover-rate (rf)) (>= (/ i pop-size) elitism-rate))
+                      (let [other (roulette cfg pop)]
+                        (first (crossover parent other)))
+                      parent)) (:pop pop))]
+    (assoc-in pop [:pop] new-gen)))
 
 (defn raw-pop->pop [pop]
   {:pop (map (fn [c] {:genes c}) pop)})
 
 (defn evolve [cfg pop]
-  {:pop (map (partial mutate cfg) (breed-pop cfg pop))})
+  (let [new-breed (breed-pop cfg pop)]
+    (mutate cfg new-breed)))
 
-(defn evolven [{:keys [terminated?] :as cfg} pop n]
-  (let [cfg (assoc cfg :pop-size (count pop))]
-    (loop [i 0
-           pop pop]
-      (let [pop (eval-pop cfg pop)
-            best (:best-chromo pop)]
-        (println "Iteration:" i "Fitness:" (:best-fitness pop) "Best Chromosome:" best )
-        (cond
-          (terminated? best) {:solved? true :best best}
-          (>= i n) false
-          :else (recur (inc i) (evolve cfg pop)))))))
+(defn evolven [{:keys [terminated? reporter] :as cfg} pop n]
+  (loop [pop pop]
+    (let [pop (eval-pop cfg pop)
+          best (:best-chromo pop)]
+      (reporter pop)
+      (cond
+        (terminated? best) {:solved? true :best best}
+        (>= (:iteration pop) n) false
+        :else (recur (evolve cfg pop))))))
 
 (defn gen-pop [pop-size chromo-size rf]
   (partition chromo-size (repeatedly (* pop-size chromo-size) rf)))
+
+(defn fancy-print []
+  (let [ind-tokens [\| \\ \- \/]
+        sz (dec (count ind-tokens))
+        i (atom 0)
+        inc-tk #(let [p (if (= @i sz) (reset! i 0) (swap! i inc))]
+                 (get ind-tokens p))]
+    (fn [pop]
+      (print (inc-tk) "Iter: " 0 "Fitness:" (:best-fitness pop) "Best:" (:best-chromo pop)))))
+
+(defn simple-print [{:keys [iteration best-fitness best-chromo]}]
+  (println "Iter:" iteration "Fitness:" best-fitness "Best:" best-chromo))
 
 ;--------------
 ; Playground
 
 (defn all-ones-sample []
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
-        pop (raw-pop->pop (gen-pop 300 28 one-or-zero))
+        pop (raw-pop->pop (gen-pop 30 28 one-or-zero))
         terminated? (fn [c] (= 28 (apply + c)))
         cfg {:terminated?    terminated?
              :crossover-rate 0.3
-             :mutation-rate  0.0001
-             :elitism-rate   0.2
+             :mutation-rate  0.05
+             :elitism-rate   0.1
              :crossover      (partial crossover rand-int 1)
              :mf             one-or-zero
              :fitness        (fn [c] (apply + c))
-             :rf             rand}
-        cfg (assoc cfg :pop-size 300)]
+             :rf             rand
+             :reporter       simple-print}]
     (evolven cfg pop 30000)))
 
 (comment
