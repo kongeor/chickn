@@ -193,6 +193,18 @@
                :fitness        (fn [c] (apply + c))})]
     (evolven cfg pop 30000)))
 
+(s/def ::crossover-rate (s/double-in :min 0 :max 1 :NaN false :infinite? false))
+(s/def ::mutation-rate (s/double-in :min 0 :max 1 :NaN false :infinite? false))
+(s/def ::elitism-rate (s/double-in :min 0 :max 1 :NaN false :infinite? false))
+(s/def ::random-func ifn?)
+(s/def ::reporter ifn?)
+
+(s/def ::cfg (s/keys :req-un [::crossover-rate ::mutation-rate ::elitism-rate
+                              ::random-func ::reporter]))
+
+(comment
+  (s/explain ::cfg (merge default-cfg {:crossover-rate 2.})))
+
 (comment
   (all-ones-sample))
 
