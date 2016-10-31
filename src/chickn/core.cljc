@@ -1,7 +1,5 @@
 (ns chickn.core
-  (:require [clojure.spec :as s]
-            [clojure.spec.gen :as gen]
-            [clojure.spec.test :as stest]))
+  (:require [clojure.spec :as s]))
 
 ; -------------
 ; Utilites
