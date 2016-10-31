@@ -54,6 +54,21 @@
      :pop pop
      :iteration iteration}))
 
+(defn ordered-crossover [rf {g1 :genes} {g2 :genes}]
+  (let [[p1 p2] (sort (repeatedly 2 rf))
+        cut (subvec g1 p1 p2)
+        rp (concat (drop p2 g2) (take p1 g2) (subvec g2 p1 p2))]
+    (loop [c []
+           i 0
+           g rp]
+      (if (= i (count g1))
+        c
+        (if (and (>= i p1) (< i p2))
+          (recur (conj c (nth g1 i)) (inc i) g)
+          (if (some (set (concat c cut)) (take 1 g))
+            (recur c i (rest g))
+            (recur (conj c (first g)) (inc i) (rest g))))))))
+
 (defn crossover
   ([c1 c2] (crossover rand-int 1 c1 c2))
   ([random-func ps {c1 :genes} {c2 :genes}]
