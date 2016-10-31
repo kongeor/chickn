@@ -1,4 +1,21 @@
-(ns chickn.core)
+(ns chickn.core
+  (:require [clojure.spec :as s]))
+
+; -------------
+; Utilites
+
+(defn val-cycle
+  "Retuns a func that upon each invocation
+  returns each passed element.
+
+  Used for dev and testing. Will be (re)moved."
+  [& vals]
+  (let [c (atom (cycle vals))]
+    (fn [& _]
+      (let [f (first @c)
+            n (next @c)]
+        (reset! c n)
+        f))))
 
 (defn- mean [coll]
   (let [sum (apply + coll)
@@ -50,6 +67,22 @@
          (if (seq c1)
            (recur (conj nc1 (first c1)) (conj nc2 (first c2)) (inc i) (next c1) (next c2))
            [{:genes nc1 :age 0} {:genes nc2 :age 0}]))))))
+
+(defn swap-mutate [random-func chromo]
+  (let [[p1 p2] (repeatedly 2 #(random-func chromo))
+        v1 (get chromo p1)
+        v2 (get chromo p2)]
+    (assoc (assoc chromo p1 v2) p2 v1)))
+
+(s/def ::gene (s/int-in 0 2))
+
+(s/def ::chromo (s/coll-of ::gene :kind vector? :count 4))
+
+(s/fdef swap-mutate
+  :args (s/cat :random-func (s/fspec :args ::chromo
+                                     :ret (s/int-in 0 4))
+               :chromo ::chromo)
+  :ret ::chromo)
 
 (defn mutate
   "For each gene of chromo c if mutation-rate is above
