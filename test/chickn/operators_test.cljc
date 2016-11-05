@@ -9,4 +9,4 @@
           c2 [5 6 7 8]
           rf (constantly 2)]
       (is (= [[1 2 7 8] [5 6 3 4]]
-             ((cut-crossover rf) c1 c2))))))
+             ((cut-crossover {:chickn.operators/random-point rf}) c1 c2))))))

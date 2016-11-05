@@ -29,9 +29,9 @@
 ; -----
 ; Genetic Operators
 
-(defn cut-crossover [random-func]
+(defn cut-crossover [{:keys [::random-point]}]
   (fn [c1 c2]
-    (let [i  (random-func c1)
+    (let [i  (random-point c1)
           o1 (into [] (concat (take i c1) (drop i c2)))
           o2 (into [] (concat (take i c2) (drop i c1)))]
       [o1 o2])))
@@ -41,45 +41,40 @@
 ; constructor funcs
 
 ;; FIXME: remove
-(defn make-selector [cfg])
+(defn make-selector [cfg]
+  (fn [pop] (first pop)))
 
 (defn crossover-pop [{:keys [::selector ::random-func ::rate ::elitism ::crossover]}]
   (let [selector (make-selector selector)]
     (fn [pop]
-      (let [pop-size (-> pop :pop count)
+      (let [pop-size (count pop)
             new-gen (map-indexed
                       (fn [i parent]
                         (if (and (> rate (random-func)) (>= (/ i pop-size) elitism))
                           (let [other (selector pop)]
-                            (first (crossover parent other)))
-                          parent)) (:pop pop))]
-        (assoc-in pop [:pop] new-gen)))))
+                            (first (crossover parent other))) ;; TODO first only?
+                          parent)) pop)]
+        (into [] new-gen)))))
 
 
 (defmulti operator ::type)
 (defmethod operator ::cut-crossover [cfg]
-  (crossover-pop cfg))
-
-(operator {::type ::cut-crossover
-           ::rate 0.3
-           ::elitism 0.1
-           ::pointcuts 1
-           ::selector noop})
-
-
-
-#_(defn breed-pop [{:keys [random-func crossover-rate crossover elitism-rate] :as cfg} pop]
-  (let [pop-size (-> pop :pop count)
-        new-gen (map-indexed
-                  (fn [i parent]
-                    (if (and (> crossover-rate (random-func)) (>= (/ i pop-size) elitism-rate))
-                      (let [other (roulette cfg pop)]
-                        (first (crossover parent other)))
-                      parent)) (:pop pop))]
-    (assoc-in pop [:pop] new-gen)))
+  (crossover-pop (assoc cfg ::crossover (cut-crossover cfg))))
 
 ; ------
 ; Playground
+
+(comment
+  ;; TODO create test
+  (let [pop (partition 4 (range 16))]
+    ((operator {::type         ::cut-crossover
+                ::rate         1.0
+                ::elitism      0.0
+                ::pointcuts    1
+                ::random-point (fn [& _] 2)
+                ::random-func  rand
+                ::selector     noop}) pop)))
+
 
 #_(s/conform :crossover/crossover
            {:crossover/type :crossover/cut-crossover
