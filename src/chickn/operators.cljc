@@ -14,6 +14,7 @@
 (s/def ::pointcuts integer?)
 (s/def ::random-point ifn?)                                 ;; a func accepting a chromosome return a random position
 (s/def ::random-func ifn?)                                  ;; duplicate with selectors?
+(s/def ::mutation-func ifn?)
 
 (s/def ::selector ifn?)                                     ; FIXME should live in it's own namespace
 
@@ -24,6 +25,9 @@
 
 (defmethod operator-type ::cut-crossover [_]
   (s/keys :req [::type ::rate ::pointcuts ::elitism ::selector ::random-point]))
+
+(defmethod operator-type ::rand-mutation [_]
+  (s/keys :req [::type ::rate ::random-func ::elitism ::mutation-func]))
 
 (s/def ::operator (s/multi-spec operator-type ::type))
 
@@ -37,6 +41,7 @@
           o2 (->> (concat (take i g2) (drop i g1)) (into []) genes->chromo)]
       [o1 o2])))
 
+;; order-crossover
 
 ; ----
 ; constructor funcs
@@ -55,9 +60,22 @@
 
 
 (defmulti operator ::type)
+
 (defmethod operator ::cut-crossover [cfg]
   (crossover-pop (assoc cfg ::crossover (cut-crossover cfg))))
 
+;; order-crossover
+
+(defmethod operator ::rand-mutation [{:keys [::random-func ::rate ::elitism ::mutation-func]}]
+  (fn [pop]
+    (let [pop-size (count pop)]
+      (map-indexed
+        (fn [i c]
+          (if (>= (/ i pop-size) elitism)
+            (assoc-in c [:genes] (mapv #(if (> rate (random-func))
+                                         (mutation-func)
+                                         %) (:genes c)))
+            c)) pop))))
 ; ------
 ; Playground
 
@@ -74,6 +92,14 @@
                 ::random-func  rand
                 ::selector     sel-cfg}) pop)))
 
+(comment
+  (let [pop (:pop (chickn.core/raw-pop->pop (partition 4 (range 16))))
+        mut-cfg {::type ::rand-mutation
+                 ::rate 0.3
+                 ::random-func rand
+                 ::elitism 0
+                 ::mutation-func (constantly -1)}]
+    ((operator mut-cfg) pop)))
 
 #_(s/conform :crossover/crossover
            {:crossover/type :crossover/cut-crossover
