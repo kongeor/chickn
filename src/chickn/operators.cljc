@@ -13,6 +13,7 @@
 (s/def ::elitism ::rate-num)
 (s/def ::pointcuts integer?)
 (s/def ::random-point ifn?)                                 ;; a func accepting a chromosome return a random position
+(s/def ::random-func ifn?)                                  ;; duplicate with selectors?
 
 (s/def ::selector ifn?)                                     ; FIXME should live in it's own namespace
 
