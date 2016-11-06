@@ -36,9 +36,9 @@
 
 ;; constructor funcs
 
-(defmulti selector ::type)
+(defmulti ->selector ::type)
 
-(defmethod selector ::roulette [cfg]
+(defmethod ->selector ::roulette [cfg]
   (roulette cfg))
 
 
@@ -49,4 +49,4 @@
              {:genes [12 13 2 3] :fitness 1}]
         random-func (constantly 0.5)]
     (with-redefs [shuffle identity]
-      ((selector {::type ::roulette ::random-func random-func}) pop))))
+      ((->selector {::type ::roulette ::random-func random-func}) pop))))

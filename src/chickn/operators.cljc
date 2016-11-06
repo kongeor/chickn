@@ -1,7 +1,7 @@
 (ns chickn.operators
-  (:require [clojure.spec :as s]))
-
-(defn noop [& args])
+  (:require [clojure.spec :as s]
+            [chickn.core :refer [genes->chromo]]
+            [chickn.selectors :refer [->selector]]))
 
 ; -----
 ; Spec
@@ -31,22 +31,18 @@
 ; Genetic Operators
 
 (defn cut-crossover [{:keys [::random-point]}]
-  (fn [c1 c2]
-    (let [i  (random-point c1)
-          o1 (into [] (concat (take i c1) (drop i c2)))
-          o2 (into [] (concat (take i c2) (drop i c1)))]
+  (fn [{g1 :genes} {g2 :genes}]
+    (let [i  (random-point g1)
+          o1 (->> (concat (take i g1) (drop i g2)) (into []) genes->chromo)
+          o2 (->> (concat (take i g2) (drop i g1)) (into []) genes->chromo)]
       [o1 o2])))
 
 
 ; ----
 ; constructor funcs
 
-;; FIXME: remove
-(defn make-selector [cfg]
-  (fn [pop] (first pop)))
-
 (defn crossover-pop [{:keys [::selector ::random-func ::rate ::elitism ::crossover]}]
-  (let [selector (make-selector selector)]
+  (let [selector (->selector selector)]
     (fn [pop]
       (let [pop-size (count pop)
             new-gen (map-indexed
@@ -66,15 +62,17 @@
 ; Playground
 
 (comment
-  ;; TODO create test
-  (let [pop (partition 4 (range 16))]
-    ((operator {::type         ::cut-crossover
+  (let [pop (:pop (chickn.core/raw-pop->pop (partition 4 (range 16))))
+        sel-cfg #:chickn.selectors{:type :chickn.selectors/roulette
+                                                  :random-func rand}]
+    ((->selector sel-cfg) pop)
+    #_((operator {::type         ::cut-crossover
                 ::rate         1.0
                 ::elitism      0.0
                 ::pointcuts    1
                 ::random-point (fn [& _] 2)
                 ::random-func  rand
-                ::selector     noop}) pop)))
+                ::selector     sel-cfg}) pop)))
 
 
 #_(s/conform :crossover/crossover

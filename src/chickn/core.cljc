@@ -140,8 +140,13 @@
                       parent)) (:pop pop))]
     (assoc-in pop [:pop] new-gen)))
 
+(defn genes->chromo [genes]
+  {:genes genes
+   :fitness 0                                               ; FIXME
+   :age 0})
+
 (defn raw-pop->pop [pop]
-  {:pop (map (fn [c] {:genes c}) pop)})
+  {:pop (map genes->chromo pop)})
 
 (defn evolve [cfg pop]
   (let [new-breed (breed-pop cfg pop)]

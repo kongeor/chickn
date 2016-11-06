@@ -1,7 +1,7 @@
 (ns chickn.selectors-test
   (:require [clojure.test :refer [deftest testing is]]
             [chickn.core :refer [val-cycle]]
-            [chickn.selectors :refer [selector]]))
+            [chickn.selectors :refer [->selector]]))
 
 (deftest routette-test
   (testing "roulette fairness"
@@ -10,7 +10,7 @@
                {:genes [8 9 2 3] :fitness 1}
                {:genes [12 13 2 3] :fitness 1}]
           make-roulette (fn [random-func]
-                          (selector #:chickn.selectors{:type :chickn.selectors/roulette
+                          (->selector #:chickn.selectors{:type :chickn.selectors/roulette
                                                        :random-func random-func}))]
       (with-redefs [shuffle identity]
         (let [random-func (constantly 0.16)]

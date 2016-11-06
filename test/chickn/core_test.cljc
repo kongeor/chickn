@@ -134,10 +134,10 @@
                [0 0 1 2]
                [0 0 0 0]
                [0 1 0 0]]]
-      (is (= {:pop [{:genes [2 2 0 0]}
-                    {:genes [0 0 1 2]}
-                    {:genes [0 0 0 0]}
-                    {:genes [0 1 0 0]}]}
+      (is (= {:pop [{:genes [2 2 0 0] :fitness 0 :age 0}
+                    {:genes [0 0 1 2] :fitness 0 :age 0}
+                    {:genes [0 0 0 0] :fitness 0 :age 0}
+                    {:genes [0 1 0 0] :fitness 0 :age 0}]}
              (raw-pop->pop pop))))))
 
 (deftest gen-pop-test
