@@ -16,11 +16,11 @@
     (with-redefs [make-selector (fn [_] #(first %))]
       (let [pop (partition 4 (range 16))]
         (is (= [[0 1 2 3] [4 5 2 3] [8 9 2 3] [12 13 2 3]]
-               ((operator {:chickn.operators/type :chickn.operators/cut-crossover
-                           :chickn.operators/rate                  1.0
-                           :chickn.operators/elitism               0.0
-                           :chickn.operators/pointcuts             1
-                           :chickn.operators/random-point          (fn [& _] 2)
-                           :chickn.operators/random-func           rand
-                           :chickn.operators/selector              noop}) pop)))))))
+               ((operator #:chickn.operators{:type         :chickn.operators/cut-crossover
+                                             :rate         1.0
+                                             :elitism      0.0
+                                             :pointcuts    1
+                                             :random-point (fn [& _] 2)
+                                             :random-func  rand
+                                             :selector     noop}) pop)))))))
 (crossover-pop-test)
