@@ -1,6 +1,5 @@
 (ns chickn.operators
   (:require [clojure.spec :as s]
-            [chickn.core :refer [genes->chromo]]
             [chickn.selectors :refer [->selector]]))
 
 ; -----
@@ -30,6 +29,14 @@
   (s/keys :req [::type ::rate ::random-func ::elitism ::mutation-func]))
 
 (s/def ::operator (s/multi-spec operator-type ::type))
+
+; -----
+; Util
+
+(defn genes->chromo [genes]
+  {:genes genes
+   :fitness 0                                               ; FIXME
+   :age 0})
 
 ; -----
 ; Genetic Operators
@@ -93,7 +100,7 @@
                 ::selector     sel-cfg}) pop)))
 
 (comment
-  (let [pop (:pop (chickn.core/raw-pop->pop (partition 4 (range 16))))
+  (let [pop (:pop (chickn.core/raw-pop->pop (partition 4 (range 16)))) ;; TODO make test
         mut-cfg {::type ::rand-mutation
                  ::rate 0.3
                  ::random-func rand

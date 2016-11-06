@@ -1,5 +1,6 @@
 (ns chickn.core
-  (:require [clojure.spec :as s]))
+  (:require [clojure.spec :as s]
+            [chickn.operators :refer [operator]]))
 
 ; -------------
 ; Utilites
@@ -206,6 +207,50 @@
 
 (s/def ::cfg (s/keys :req-un [::crossover-rate ::mutation-rate ::elitism-rate
                               ::random-func ::reporter]))
+
+(defn evolve* [{:keys [::init-pop ::terminated? ::operators ::reporter] :as cfg} n]
+  (let [pop (init-pop)
+        opts (map operator operators)
+        evol (fn [pop] (assoc pop :pop (reduce #(%2 %1) (:pop pop) opts)))]
+    (loop [pop pop]
+      (let [pop (eval-pop cfg pop)
+            best (:best-chromo pop)]
+        (reporter pop)
+        (cond
+          (terminated? best) {:solved? true :best best}
+          (>= (:iteration pop) n) false
+          :else (recur (evol pop)))))))
+
+;; Spec
+
+(s/def ::fitness ifn?)
+(s/def ::init-pop ifn?)
+(s/def ::terminated? ifn?)
+(s/def ::operators (s/+ :chickn.operators/operator))
+
+(s/def ::config (s/keys :req [::init-pop ::terminated? ::operators]
+                        :req-un [::fitness]))
+
+(comment
+  (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
+        cfg {::init-pop    #(raw-pop->pop (gen-pop 30 256 one-or-zero))
+             ::terminated? (fn [c] (= 256 (apply + c)))
+             :fitness      (fn [c] (apply + c))
+             ::reporter    simple-print
+             ::operators   [#:chickn.operators{:type         :chickn.operators/cut-crossover
+                                               :rate         0.3
+                                               :elitism      0.1
+                                               :pointcuts    1
+                                               :random-point rand-nth
+                                               :random-func  rand
+                                               :selector     #:chickn.selectors{:type        :chickn.selectors/roulette
+                                                                                :random-func rand}}
+                            #:chickn.operators{:type          :chickn.operators/rand-mutation
+                                               :rate          0.02
+                                               :random-func   rand
+                                               :elitism       0.1
+                                               :mutation-func one-or-zero}]}]
+    (evolve* cfg 30000)))
 
 (comment
   (s/explain ::cfg (merge default-cfg {:crossover-rate 2.})))
