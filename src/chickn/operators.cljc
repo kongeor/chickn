@@ -1,5 +1,5 @@
 (ns chickn.operators
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [chickn.selectors :refer [->selector]]))
 
 ; -----
