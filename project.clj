@@ -3,10 +3,10 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
-                 [org.clojure/clojurescript "1.9.293"]]
-  :plugins [[lein-cljsbuild "1.1.4"]
-            [lein-doo "0.1.7"]]
+  :dependencies [[org.clojure/clojure "1.9.0-beta2"]
+                 [org.clojure/clojurescript "1.9.946"]]
+  :plugins [[lein-cljsbuild "1.1.7"]
+            [lein-doo "0.1.8"]]
   :profiles {:dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
   :aliases {"testjs"  ["doo" "phantom" "test" "once"]
             "testall" ["do" "clean" ["test"] ["doo" "phantom" "test" "once"]]}
