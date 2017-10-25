@@ -86,7 +86,7 @@
 
 (defmethod ->operator ::cut-crossover [cfg]
   (let [cross (cut-crossover cfg)]
-    (fn [pop {:keys [:chickn.core/elitism-rate :chickn.core/pop-size] :as cfg}]
+    (fn [pop {:keys [:chickn.core/elitism-rate :chickn.core/pop-size :chickn.core/rand-nth]}]
       (let [n (-> (* (- 1.0 elitism-rate) pop-size) Math/round int)]
         (->>
           (let [pairs (/ (if (= (mod n 2) 0) n (inc n)) 2)]

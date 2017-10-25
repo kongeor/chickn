@@ -247,6 +247,7 @@
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         cfg {::init-pop    #(raw-pop->pop (gen-pop 30 256 one-or-zero))
              ::pop-size 30                                  ;; Check line above
+             ::rand-nth rand-nth
              ::elitism-rate 0.1
              ::terminated? (fn [c] (= 256 (apply + c)))
              :fitness      (fn [c] (apply + c))

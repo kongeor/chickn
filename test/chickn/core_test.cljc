@@ -15,6 +15,7 @@
             :age-avg 2.0
             :best-fitness 3
             :iteration 1
+            :total-fitness 6
             :best-chromo [0 0 1 2]
             :pop [{:genes [0 0 1 2]
                    :fitness 3
