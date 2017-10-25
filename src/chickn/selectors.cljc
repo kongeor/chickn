@@ -19,14 +19,12 @@
 
 (defn roulette
   [{:keys [::random-func]}]
-  (fn [pop]
-    (let [total-fitness (->> pop (map :fitness) (apply +))
-          roulette-pos (* (random-func) total-fitness)
-          pop-cnt (dec (count pop))
+  (fn [{:keys [total-fitness pop]} {:keys [chickn.core/pop-size]}]
+    (let [roulette-pos (* (random-func) total-fitness)
           pop (shuffle pop)]
       (loop [w 0
              i 0]
-        (if (> i pop-cnt)
+        (if (> i pop-size)
           (last pop)
           (let [c (nth pop i)
                 w (+ w (:fitness c))]
@@ -44,9 +42,10 @@
 
 (comment
   (let [pop [{:genes [0 1 2 3] :fitness 1}
-             {:genes [4 5 2 3] :fitness 1}
-             {:genes [8 9 2 3] :fitness 1}
-             {:genes [12 13 2 3] :fitness 1}]
-        random-func (constantly 0.5)]
+             {:genes [4 5 2 3] :fitness 2}
+             {:genes [8 9 2 3] :fitness 4}
+             {:genes [12 13 2 3] :fitness 8}]
+        pop {:pop pop :total-fitness 15}
+        random-func rand #_(constantly 0.5)]
     (with-redefs [shuffle identity]
-      ((->selector {::type ::roulette ::random-func random-func}) pop))))
+      ((->selector {::type ::roulette ::random-func random-func}) pop {:chickn.core/pop-size 4}))))
