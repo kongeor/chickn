@@ -15,15 +15,13 @@
 (s/def ::random-func ifn?)                                  ;; duplicate with selectors?
 (s/def ::mutation-func ifn?)
 
-(s/def ::selector ifn?)                                     ; FIXME should live in it's own namespace
-
 (defmulti operator-type ::type)
 
 (defmethod operator-type ::order-crossover [_]
-  (s/keys :req [::type ::rate ::elitism ::selector ::random-point]))
+  (s/keys :req [::type ::rate ::elitism ::random-point]))
 
 (defmethod operator-type ::cut-crossover [_]
-  (s/keys :req [::type ::rate ::pointcuts ::elitism ::selector ::random-point]))
+  (s/keys :req [::type ::rate ::pointcuts ::elitism ::random-point]))
 
 (defmethod operator-type ::rand-mutation [_]
   (s/keys :req [::type ::rate ::random-func ::elitism ::mutation-func]))
@@ -83,6 +81,54 @@
                                          (mutation-func)
                                          %) (:genes c)))
             c)) pop))))
+
+(defmulti ->operator ::type)
+
+(defmethod ->operator ::cut-crossover [cfg]
+  (let [cross (cut-crossover cfg)]
+    (fn [pop {:keys [:chickn.core/elitism-rate :chickn.core/pop-size] :as cfg}]
+      (let [n (-> (* (- 1.0 elitism-rate) pop-size) Math/round int)]
+        (->>
+          (let [pairs (/ (if (= (mod n 2) 0) n (inc n)) 2)]
+            (take
+              pairs
+              (repeatedly
+                #(cross (rand-nth pop) (rand-nth pop)))))
+          (apply concat)
+          (take n)
+          (into []))))))
+
+(defmethod ->operator ::rand-mutation [{:keys [::random-func ::rate ::mutation-func]}]
+  (fn [pop _]
+    (map
+      (fn [c]
+        (assoc-in c [:genes]
+          (mapv #(if (> rate (random-func))
+                   (mutation-func)
+                   %) (:genes c)))) pop)))
+
+(comment
+  (let [pop [{:genes [0 1 2 3] :fitness 1}
+             {:genes [4 5 6 7] :fitness 1}
+             {:genes [8 9 10 11] :fitness 1}
+             {:genes [12 13 14 15] :fitness 1}]
+        random-func (constantly 0.5)]
+    ((->operator {::type ::cut-crossover
+                  ::rate 0.3
+                  ::pointcuts 1
+                  ::random-point rand-nth}) pop {:chickn.core/pop-size 10 :chickn.core/elitism-rate 0.56})))
+
+(comment
+  (let [pop [{:genes [0 1 2 3] :fitness 1}
+             {:genes [4 5 6 7] :fitness 1}
+             {:genes [8 9 10 11] :fitness 1}
+             {:genes [12 13 14 15] :fitness 1}]
+        random-func (constantly 0.2)]
+    ((->operator {::type ::rand-mutation
+                  ::rate 0.3
+                  ::random-func random-func
+                  ::mutation-func (constantly -1)}) pop {})))
+
 ; ------
 ; Playground
 
@@ -108,11 +154,12 @@
                  ::mutation-func (constantly -1)}]
     ((operator mut-cfg) pop)))
 
-#_(s/conform :crossover/crossover
-           {:crossover/type :crossover/cut-crossover
-            :crossover/rate 0.3
-            :crossover/pointcuts 1})
-
+(comment
+  (s/conform ::operator
+             {::type ::cut-crossover
+              ::rate 0.3
+              ::pointcuts 1
+              ::random-point rand-nth}))
 #_(s/conform :crossover/crossover
            {:crossover/type :crossover/order-crossover
             :crossover/rate 0.3})

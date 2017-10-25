@@ -1,6 +1,6 @@
 (ns chickn.core
   (:require [clojure.spec.alpha :as s]
-            [chickn.operators :refer [operator]]))
+            [chickn.operators :refer [operator ->operator]]))
 
 ; -------------
 ; Utilites
@@ -210,8 +210,8 @@
 
 (defn evolve* [{:keys [::init-pop ::terminated? ::operators ::reporter] :as cfg} n]
   (let [pop (init-pop)
-        opts (map operator operators)
-        evol (fn [pop] (assoc pop :pop (reduce #(%2 %1) (:pop pop) opts)))]
+        opts (map ->operator operators)
+        evol (fn [pop] (assoc pop :pop (reduce #(%2 %1 cfg) (:pop pop) opts)))]
     (loop [pop pop]
       (let [pop (eval-pop cfg pop)
             best (:best-chromo pop)]
@@ -228,12 +228,14 @@
 (s/def ::terminated? ifn?)
 (s/def ::operators (s/+ :chickn.operators/operator))
 
-(s/def ::config (s/keys :req [::init-pop ::terminated? ::operators]
+(s/def ::config (s/keys :req [::init-pop ::elitism-rate ::pop-size ::terminated? ::operators]
                         :req-un [::fitness]))
 
 (comment
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         cfg {::init-pop    #(raw-pop->pop (gen-pop 30 256 one-or-zero))
+             ::pop-size 30                                  ;; Check line above
+             ::elitism-rate 0.05
              ::terminated? (fn [c] (= 256 (apply + c)))
              :fitness      (fn [c] (apply + c))
              ::reporter    simple-print
