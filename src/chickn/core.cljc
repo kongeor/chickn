@@ -1,6 +1,7 @@
 (ns chickn.core
   (:require [clojure.spec.alpha :as s]
-            [chickn.operators :refer [operator ->operator]]))
+            [chickn.operators :refer [operator ->operator]]
+            [chickn.selectors :refer [->selector]]))
 
 ; -------------
 ; Utilites
@@ -52,6 +53,7 @@
      :std-dev std-dev
      :best-fitness best-fitness
      :best-chromo best-chromo
+     :total-fitness (reduce + (map :fitness pop))
      :pop pop
      :iteration iteration}))
 
@@ -208,18 +210,28 @@
 (s/def ::cfg (s/keys :req-un [::crossover-rate ::mutation-rate ::elitism-rate
                               ::random-func ::reporter]))
 
-(defn evolve* [{:keys [::init-pop ::terminated? ::operators ::reporter] :as cfg} n]
+(defn evolve* [{:keys [::init-pop ::pop-size ::terminated?
+                       ::selector ::operators ::reporter ::elitism-rate] :as cfg} n]
   (let [pop (init-pop)
+        selector (->selector selector)
         opts (map ->operator operators)
-        evol (fn [pop] (assoc pop :pop (reduce #(%2 %1 cfg) (:pop pop) opts)))]
+        ;evol (fn [pop] (assoc pop :pop (reduce #(%2 %1 cfg) (:pop pop) opts)))
+        evol (fn [pop] (reduce #(%2 %1 cfg) pop opts))
+        elit-cnt (* pop-size elitism-rate)
+        mating-pop-size (- pop-size elit-cnt)]
     (loop [pop pop]
       (let [pop (eval-pop cfg pop)
             best (:best-chromo pop)]
+        #_(println (selector pop cfg))
         (reporter pop)
         (cond
           (terminated? best) {:solved? true :best best}
           (>= (:iteration pop) n) false
-          :else (recur (evol pop)))))))
+          :else (recur (let [mating-pop (repeatedly mating-pop-size #(selector pop cfg))
+                             elit (take elit-cnt (:pop pop))
+                             new-gen (evol mating-pop)
+                             all-new (concat elit new-gen)]
+                         (assoc pop :pop all-new))))))))
 
 ;; Spec
 
@@ -235,24 +247,22 @@
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         cfg {::init-pop    #(raw-pop->pop (gen-pop 30 256 one-or-zero))
              ::pop-size 30                                  ;; Check line above
-             ::elitism-rate 0.05
+             ::elitism-rate 0.1
              ::terminated? (fn [c] (= 256 (apply + c)))
              :fitness      (fn [c] (apply + c))
              ::reporter    simple-print
+             ::selector    #:chickn.selectors{:type        :chickn.selectors/roulette
+                                              :random-func rand}
              ::operators   [#:chickn.operators{:type         :chickn.operators/cut-crossover
                                                :rate         0.3
-                                               :elitism      0.1
                                                :pointcuts    1
                                                :random-point rand-nth
-                                               :random-func  rand
-                                               :selector     #:chickn.selectors{:type        :chickn.selectors/roulette
-                                                                                :random-func rand}}
+                                               :random-func  rand}
                             #:chickn.operators{:type          :chickn.operators/rand-mutation
-                                               :rate          0.02
+                                               :rate          0.01
                                                :random-func   rand
-                                               :elitism       0.1
                                                :mutation-func one-or-zero}]}]
-    (evolve* cfg 30000)))
+    (:solved? (evolve* cfg 3000))))
 
 (comment
   (s/explain ::cfg (merge default-cfg {:crossover-rate 2.})))
