@@ -9,7 +9,8 @@
   (let [pop {:pop [{:genes [0 0 1 1] :age 1}
                    {:genes [0 0 1 2] :age 2}
                    {:genes [0 1 0 0]}]}
-        cfg {:fitness (fn [genes] (apply + genes))}]
+        cfg {:fitness (fn [genes] (apply + genes))
+             :chickn.core/comparator chickn.core/descending}]
     (is (= {:pop-avg 2.0
             :std-dev 1.0
             :age-avg 2.0

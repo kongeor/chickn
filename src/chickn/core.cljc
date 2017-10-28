@@ -36,13 +36,13 @@
            (- total 1))
       (Math/sqrt))))
 
-(defn eval-pop [{fitness :fitness} pop]
+(defn eval-pop [{fitness :fitness comparator ::comparator} pop]
   (let [iteration ((fnil inc 0) (:iteration pop))
         pop (mapv (fn [{:keys [genes age]}]
                     {:fitness (fitness genes)
                      :genes genes
                      :age ((fnil inc 0) age)}) (:pop pop))
-        pop (sort-by :fitness #(compare %2 %1) pop)
+        pop (sort-by :fitness comparator pop)
         pop-avg (mean (map :fitness pop))
         std-dev (std-dev (map :fitness pop))
         age-avg (mean (map :age pop))
@@ -243,6 +243,9 @@
 (s/def ::config (s/keys :req [::init-pop ::elitism-rate ::pop-size ::terminated? ::operators]
                         :req-un [::fitness]))
 
+(def descending #(compare %2 %1))
+(def ascending compare)
+
 (comment
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         cfg {::init-pop    #(raw-pop->pop (gen-pop 30 256 one-or-zero))
@@ -251,6 +254,30 @@
              ::elitism-rate 0.1
              ::terminated? (fn [c] (= 256 (apply + c)))
              :fitness      (fn [c] (apply + c))
+             ::comparator  descending
+             ::reporter    simple-print
+             ::selector    #:chickn.selectors{:type        :chickn.selectors/roulette
+                                              :random-func rand}
+             ::operators   [#:chickn.operators{:type         :chickn.operators/cut-crossover
+                                               :rate         0.3
+                                               :pointcuts    1
+                                               :random-point rand-nth
+                                               :random-func  rand}
+                            #:chickn.operators{:type          :chickn.operators/rand-mutation
+                                               :rate          0.01
+                                               :random-func   rand
+                                               :mutation-func one-or-zero}]}]
+    (:solved? (evolve* cfg 3000))))
+
+(comment
+  (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
+        cfg {::init-pop    #(raw-pop->pop (gen-pop 30 256 one-or-zero))
+             ::pop-size 30                                  ;; Check line above
+             ::rand-nth rand-nth
+             ::elitism-rate 0.1
+             ::terminated? (fn [c] (= 0 (apply + c)))
+             :fitness      (fn [c] (apply + c))
+             ::comparator  ascending
              ::reporter    simple-print
              ::selector    #:chickn.selectors{:type        :chickn.selectors/roulette
                                               :random-func rand}
