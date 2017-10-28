@@ -2,8 +2,7 @@
   (:require [clojure.test :refer [deftest testing is]]
             [chickn.core :refer [eval-pop crossover roulette
                                  breed-pop mutate raw-pop->pop
-                                 gen-pop swap-mutate val-cycle
-                                 ordered-crossover]]))
+                                 gen-pop swap-mutate val-cycle]]))
 
 (deftest eval-pop-test
   (let [pop {:pop [{:genes [0 0 1 1] :age 1}
@@ -28,14 +27,6 @@
                    :fitness 1
                    :age 1}]}
            (eval-pop cfg pop)))))
-
-(deftest ordered-crossover-test
-  (testing "ordered crossover"
-    (let [c1 {:genes [4 1 2 3 5 6]}
-          c2 {:genes [3 5 4 6 2 1]}
-          rf (val-cycle 2 5)]
-      (is (= [1 4 2 3 5 6]
-             (ordered-crossover rf c1 c2))))))
 
 (deftest crossover-test
   (testing "one pointcut"

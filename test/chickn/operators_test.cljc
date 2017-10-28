@@ -1,7 +1,7 @@
 (ns chickn.operators-test
   (:require [clojure.test :refer [deftest testing is]]
             [chickn.core :refer [val-cycle genes->chromo]]
-            [chickn.operators :refer [cut-crossover ->operator]]))
+            [chickn.operators :refer [cut-crossover ordered-crossover ->operator]]))
 
 (deftest crossover-test
   (testing "one pointcut"
@@ -11,8 +11,17 @@
       (is (= [{:genes [1 2 7 8] :fitness 0 :age 0} {:genes [5 6 3 4] :fitness 0 :age 0}]
              ((cut-crossover {:chickn.operators/random-point rf}) c1 c2))))))
 
+(deftest ordered-crossover-test
+  (testing "ordered crossover"
+    (let [c1 {:genes [4 1 2 3 5 6] :fitness 0 :age 0}
+          c2 {:genes [3 5 4 6 2 1] :fitness 0 :age 0}
+          rf (val-cycle 2 5)]
+      (is (= {:genes [1 4 2 3 5 6] :fitness 0 :age 0}
+             ((ordered-crossover {:chickn.operators/random-point rf}) c1 c2))))))
+
+
 (deftest crossover-pop-test
-  (testing "wiring"
+  (testing "crossover pop wiring"
     (with-redefs [shuffle identity]
       (let [pop (chickn.core/raw-pop->pop (partition 4 (range 16))) ;; FIXME
             chromos (:pop pop)
@@ -28,4 +37,25 @@
                                                :pointcuts    1
                                                :random-point (fn [& _] 2)
                                                :random-func  rf}) pop cfg)))))))
-(crossover-pop-test)
+(deftest ordered-crossover-pop-test
+  (testing "ordered crossover wiring"
+    (with-redefs [shuffle identity]
+      (let [pop (chickn.core/raw-pop->pop [[1 2 3 4 5 6]
+                                           [2 3 4 5 6 1]
+                                           [4 1 5 3 2 6]
+                                           [6 3 2 1 4 5]])
+            chromos (:pop pop)
+            rnd-chromos (val-cycle (first chromos) (second chromos)
+                                   (nth chromos 2) (nth chromos 3)
+                                   (second chromos) (first chromos)
+                                   (nth chromos 3) (nth chromos 2))
+            cfg {:chickn.core/pop-size 4 :chickn.core/elitism-rate 0 :chickn.core/rand-nth rnd-chromos}
+            rf (val-cycle 2 4 1 3)]
+        (is (= [{:genes [6 1 3 4 2 5] :fitness 0 :age 0}
+                {:genes [4 1 5 6 3 2] :fitness 0 :age 0}
+                {:genes [6 1 4 5 2 3] :fitness 0 :age 0}
+                {:genes [6 3 2 4 1 5] :fitness 0 :age 0}]
+               ((->operator #:chickn.operators{:type         :chickn.operators/ordered-crossover
+                                               :rate         1.0
+                                               :pointcuts    1
+                                               :random-point rf}) pop cfg)))))))
