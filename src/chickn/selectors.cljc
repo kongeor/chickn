@@ -19,17 +19,22 @@
 
 (defn roulette
   [{:keys [::random-func]}]
-  (fn [{:keys [total-fitness pop]} {:keys [chickn.core/pop-size]}]
-    (let [roulette-pos (* (random-func) total-fitness)
-          pop (shuffle pop)]
+  (fn [{:keys [pop]} {:keys [chickn.core/comparator]}]
+    (let [pop-size (count pop)
+          max-fit (:fitness (first (sort-by :fitness #(compare %2 %1) pop)))
+          pop (shuffle pop)
+          fits-scaled (mapv #(/ (:fitness %) max-fit) pop)
+          ascending? (= -1 (comparator 1 2))
+          fits-scaled (if ascending? (mapv #(- 1.0 %) fits-scaled) fits-scaled)
+          total-fitness (reduce + fits-scaled)
+          roulette-pos (* (random-func) total-fitness)]
       (loop [w 0
              i 0]
         (if (> i pop-size)
           (last pop)
-          (let [c (nth pop i)
-                w (+ w (:fitness c))]
+          (let [w (+ w (nth fits-scaled i))]
             (if (>= w roulette-pos)
-              c
+              (nth pop i)
               (recur w (inc i)))))))))
 
 ;; constructor funcs
