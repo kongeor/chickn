@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest testing is]]
             [chickn.core :refer [eval-pop crossover roulette
                                  breed-pop mutate raw-pop->pop
-                                 gen-pop swap-mutate val-cycle]]))
+                                 gen-pop val-cycle]]))
 
 (deftest eval-pop-test
   (let [pop {:pop [{:genes [0 0 1 1] :age 1}
@@ -44,12 +44,6 @@
                (fn [& _] (swap! i + 2)))]
       (is (= [{:genes [1 2 7 8 5] :age 0} {:genes [5 6 3 4 9] :age 0}]
              (crossover rf ps c1 c2))))))
-
-(deftest swap-mutate-test
-  (testing "Swapping 2 genes"
-    (let [rf (val-cycle 2 4)]
-      (is (= [1 2 5 4 3 6]
-             (swap-mutate rf [1 2 3 4 5 6]))))))
 
 (deftest roulette-test
   (let [pop {:pop [{:genes   [0 0 1 2]

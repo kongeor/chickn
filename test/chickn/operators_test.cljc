@@ -1,7 +1,8 @@
 (ns chickn.operators-test
   (:require [clojure.test :refer [deftest testing is]]
             [chickn.core :refer [val-cycle genes->chromo]]
-            [chickn.operators :refer [cut-crossover ordered-crossover ->operator]]))
+            [chickn.operators :refer [cut-crossover ordered-crossover
+                                      swap-mutate ->operator]]))
 
 (deftest crossover-test
   (testing "one pointcut"
@@ -18,6 +19,12 @@
           rf (val-cycle 2 5)]
       (is (= {:genes [1 4 2 3 5 6] :fitness 0 :age 0}
              ((ordered-crossover {:chickn.operators/random-point rf}) c1 c2))))))
+
+(deftest swap-mutate-test
+  (testing "Swapping 2 genes"
+    (let [rf (val-cycle 2 4)]
+      (is (= {:genes [1 2 5 4 3 6] :fitness 0 :age 0}
+             (swap-mutate rf (genes->chromo [1 2 3 4 5 6])))))))
 
 
 (deftest crossover-pop-test
@@ -37,6 +44,7 @@
                                                :pointcuts    1
                                                :random-point (fn [& _] 2)
                                                :random-func  rf}) pop cfg)))))))
+
 (deftest ordered-crossover-pop-test
   (testing "ordered crossover wiring"
     (with-redefs [shuffle identity]
@@ -59,3 +67,18 @@
                                                :rate         1.0
                                                :pointcuts    1
                                                :random-point rf}) pop cfg)))))))
+
+(deftest swap-mutate-pop-test
+  (testing "swap mutate pop wiring"
+    (with-redefs [shuffle identity]
+      (let [pop (chickn.core/raw-pop->pop (partition 4 (range 16))) ;; FIXME
+            rnd-genes (val-cycle 1 3)
+            rf (val-cycle 0.5 0 0.5 0.5)]
+        (is (= [{:genes [0 1 2 3] :fitness 0 :age 0}
+                {:genes [4 7 6 5] :fitness 0 :age 0}
+                {:genes [8 9 10 11] :fitness 0 :age 0}
+                {:genes [12 13 14 15] :fitness 0 :age 0}]
+               ((->operator #:chickn.operators{:type         :chickn.operators/swap-mutation
+                                               :rate         0.3
+                                               :rand-nth rnd-genes
+                                               :random-func  rf}) (:pop pop) {})))))))

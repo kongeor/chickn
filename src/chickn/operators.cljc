@@ -68,6 +68,12 @@
                 (recur (conj c (first g)) (inc i) (rest g))))))
         genes->chromo))))
 
+(defn swap-mutate [random-func chromo]
+  (let [genes (:genes chromo)]
+    (let [[p1 p2] (repeatedly 2 #(random-func genes))
+          v1 (get genes p1)
+          v2 (get genes p2)]
+      (genes->chromo (assoc (assoc genes p1 v2) p2 v1)))))
 
 ; ----
 ; constructor funcs
@@ -137,6 +143,14 @@
           (mapv #(if (> rate (random-func))
                    (mutation-func)
                    %) (:genes c)))) pop)))
+
+(defmethod ->operator ::swap-mutation [{:keys [::rand-nth ::rate ::random-func]}]
+  (fn [pop _]
+    (mapv
+      (fn [c]
+        (if (> rate (random-func))
+          (swap-mutate rand-nth c)
+          c)) pop)))
 
 (comment
   (let [pop [{:genes [0 1 2 3] :fitness 1}

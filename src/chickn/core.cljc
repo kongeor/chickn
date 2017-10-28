@@ -71,12 +71,6 @@
            (recur (conj nc1 (first c1)) (conj nc2 (first c2)) (inc i) (next c1) (next c2))
            [{:genes nc1 :age 0} {:genes nc2 :age 0}]))))))
 
-(defn swap-mutate [random-func chromo]
-  (let [[p1 p2] (repeatedly 2 #(random-func chromo))
-        v1 (get chromo p1)
-        v2 (get chromo p2)]
-    (assoc (assoc chromo p1 v2) p2 v1)))
-
 (s/def ::gene (s/int-in 0 2))
 
 (s/def ::chromo (s/coll-of ::gene :kind vector? :count 4))
@@ -129,12 +123,12 @@
     (assoc-in pop [:pop] new-gen)))
 
 (defn genes->chromo [genes]
-  {:genes genes
+  {:genes (vec genes)
    :fitness 0                                               ; FIXME
    :age 0})
 
 (defn raw-pop->pop [pop]
-  {:pop (map genes->chromo pop)})
+  {:pop (mapv genes->chromo pop)})
 
 (defn evolve [cfg pop]
   (let [new-breed (breed-pop cfg pop)]
