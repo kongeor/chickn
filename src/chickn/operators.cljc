@@ -48,6 +48,27 @@
 
 ;; order-crossover
 
+(defn ordered-crossover [{:keys [::random-point]}]
+  (fn [{g1 :genes} {g2 :genes}]
+    (let [g1 (vec g1)
+          g2 (vec g2)
+          [p1 p2] (sort (repeatedly 2 random-point))
+          cut (subvec g1 p1 p2)
+          rp (concat (drop p2 g2) (take p1 g2) (subvec g2 p1 p2))]
+      (->
+        (loop [c []
+               i 0
+               g rp]
+          (if (= i (count g1))
+            c
+            (if (and (>= i p1) (< i p2))
+              (recur (conj c (nth g1 i)) (inc i) g)
+              (if (some (set (concat c cut)) (take 1 g))
+                (recur c i (rest g))
+                (recur (conj c (first g)) (inc i) (rest g))))))
+        genes->chromo))))
+
+
 ; ----
 ; constructor funcs
 
@@ -95,6 +116,16 @@
               (repeatedly
                 #(cross (rand-nth pop) (rand-nth pop)))))
           (apply concat)
+          (take n)
+          (into []))))))
+
+(defmethod ->operator ::ordered-crossover [cfg]
+  (let [cross (ordered-crossover cfg)]
+    (fn [pop {:keys [:chickn.core/elitism-rate :chickn.core/pop-size :chickn.core/rand-nth]}]
+      (let [n (-> (* (- 1.0 elitism-rate) pop-size) Math/round int)]
+        (->>
+          (repeatedly
+            #(cross (rand-nth pop) (rand-nth pop)))
           (take n)
           (into []))))))
 
