@@ -38,10 +38,10 @@
 
 (defn eval-pop [{fitness :fitness comparator ::comparator} pop]
   (let [iteration ((fnil inc 0) (:iteration pop))
-        pop (mapv (fn [{:keys [genes age]}]
-                    {:fitness (fitness genes)
-                     :genes genes
-                     :age ((fnil inc 0) age)}) (:pop pop))
+        pop (vec (map (fn [{:keys [genes age]}]
+                        {:fitness (fitness genes)
+                         :genes genes
+                         :age ((fnil inc 0) age)}) (:pop pop)))
         pop (sort-by :fitness comparator pop)
         pop-avg (mean (map :fitness pop))
         std-dev (std-dev (map :fitness pop))
@@ -197,16 +197,18 @@
         ;evol (fn [pop] (assoc pop :pop (reduce #(%2 %1 cfg) (:pop pop) opts)))
         evol (fn [pop] (reduce #(%2 %1 cfg) pop opts))
         elit-cnt (* pop-size elitism-rate)
-        mating-pop-size (- pop-size elit-cnt)]
+        mating-pop-size (- pop-size elit-cnt)
+        start (System/currentTimeMillis)
+        endf #(- (System/currentTimeMillis) start)]
     (loop [pop pop]
       (let [pop (eval-pop cfg pop)
             best (:best-chromo pop)]
         #_(println (selector pop cfg))
         (reporter pop)
         (cond
-          (terminated? best) {:solved? true :best best}
-          (>= (:iteration pop) n) false
-          :else (recur (let [mating-pop (repeatedly mating-pop-size #(selector pop cfg))
+          (terminated? best) {:solved? true :time (endf) :best best}
+          (>= (:iteration pop) n) {:solved? false :time (endf)}
+          :else (recur (let [mating-pop (map (fn [_] (selector pop cfg)) (range mating-pop-size))
                              elit (take elit-cnt (:pop pop))
                              new-gen (evol mating-pop)
                              all-new (concat elit new-gen)]
@@ -227,11 +229,11 @@
 
 (comment
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
-        cfg {::init-pop    #(raw-pop->pop (gen-pop 30 256 one-or-zero))
-             ::pop-size 30                                  ;; Check line above
+        cfg {::init-pop    #(raw-pop->pop (gen-pop 30 700 one-or-zero))
+             ::pop-size 30
              ::rand-nth rand-nth
              ::elitism-rate 0.1
-             ::terminated? (fn [c] (= 256 (apply + c)))
+             ::terminated? (fn [c] (= 700 (apply + c)))
              :fitness      (fn [c] (apply + c))
              ::comparator  descending
              ::reporter    simple-print
@@ -243,10 +245,10 @@
                                                :random-point rand-nth
                                                :random-func  rand}
                             #:chickn.operators{:type          :chickn.operators/rand-mutation
-                                               :rate          0.01
+                                               :rate          0.001
                                                :random-func   rand
                                                :mutation-func one-or-zero}]}]
-    (:solved? (evolve* cfg 3000))))
+    (select-keys (evolve* cfg 10000) [:solved? :time])))
 
 (comment
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
