@@ -1,7 +1,8 @@
 (ns chickn.core
   (:require [clojure.spec.alpha :as s]
             [chickn.operators :refer [operator ->operator]]
-            [chickn.selectors :refer [->selector]]))
+            [chickn.selectors :refer [->selector]]
+            [chickn.util :as util]))
 
 ; -------------
 ; Utilites
@@ -198,8 +199,8 @@
         evol (fn [pop] (reduce #(%2 %1 cfg) pop opts))
         elit-cnt (* pop-size elitism-rate)
         mating-pop-size (- pop-size elit-cnt)
-        start (System/currentTimeMillis)
-        endf #(- (System/currentTimeMillis) start)]
+        start (util/now-millis)
+        endf #(- (util/now-millis) start)]
     (loop [pop pop]
       (let [pop (eval-pop cfg pop)
             best (:best-chromo pop)]
