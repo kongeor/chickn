@@ -37,7 +37,7 @@
            (- total 1))
       (Math/sqrt))))
 
-(defn eval-pop [{fitness :fitness comparator ::comparator} pop]
+(defn eval-pop [{fitness :chickn.core/fitness comparator ::comparator} pop]
   (let [iteration ((fnil inc 0) (:iteration pop))
         pop (vec (map (fn [{:keys [genes age]}]
                         {:fitness (fitness genes)
@@ -235,7 +235,7 @@
              ::rand-nth rand-nth
              ::elitism-rate 0.1
              ::terminated? (fn [c] (= 700 (apply + c)))
-             :fitness      (fn [c] (apply + c))
+             ::fitness      (fn [c] (apply + c))
              ::comparator  descending
              ::reporter    simple-print
              ::selector    #:chickn.selectors{:type        :chickn.selectors/roulette
