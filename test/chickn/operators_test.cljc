@@ -1,8 +1,9 @@
 (ns chickn.operators-test
   (:require [clojure.test :refer [deftest testing is]]
-            [chickn.core :refer [val-cycle genes->chromo]]
+            [chickn.core :refer [genes->chromo]]
             [chickn.operators :refer [cut-crossover ordered-crossover
-                                      swap-mutate ->operator]]))
+                                      swap-mutate ->operator]]
+            [chickn.util :refer [val-cycle]]))
 
 (deftest crossover-test
   (testing "one pointcut"

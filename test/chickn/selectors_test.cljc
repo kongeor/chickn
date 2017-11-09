@@ -1,7 +1,7 @@
 (ns chickn.selectors-test
   (:require [clojure.test :refer [deftest testing is]]
-            [chickn.core :refer [val-cycle]]
-            [chickn.selectors :refer [->selector]]))
+            [chickn.selectors :refer [->selector]]
+            [chickn.util :as util]))
 
 (deftest routette-test
   (testing "roulette fairness"
@@ -39,6 +39,7 @@
                                                          :random-func random-func}))]
       (with-redefs [shuffle identity]
         ;; inverse probability will give this a zero selection chance
+        ;; FIXME
         #_(let [random-func (constantly 0.16)]
           (is (= {:genes [0 1 2 3] :fitness 4}
                  ((make-roulette random-func) pop cfg))))

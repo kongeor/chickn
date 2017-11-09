@@ -78,43 +78,12 @@
 ; ----
 ; constructor funcs
 
-(defn crossover-pop [{:keys [::selector ::random-func ::rate ::elitism ::crossover]}]
-  (let [selector (->selector selector)]
-    (fn [pop]
-      (let [pop-size (count pop)
-            new-gen (map-indexed
-                      (fn [i parent]
-                        (if (and (> rate (random-func)) (>= (/ i pop-size) elitism))
-                          (let [other (selector pop)]
-                            (first (crossover parent other))) ;; TODO first only?
-                          parent)) pop)]
-        (into [] new-gen)))))
-
-
-(defmulti operator ::type)
-
-(defmethod operator ::cut-crossover [cfg]
-  (crossover-pop (assoc cfg ::crossover (cut-crossover cfg))))
-
-;; order-crossover
-
-(defmethod operator ::rand-mutation [{:keys [::random-func ::rate ::elitism ::mutation-func]}]
-  (fn [pop]
-    (let [pop-size (count pop)]
-      (map-indexed
-        (fn [i c]
-          (if (>= (/ i pop-size) elitism)
-            (assoc-in c [:genes] (mapv #(if (> rate (random-func))
-                                         (mutation-func)
-                                         %) (:genes c)))
-            c)) pop))))
-
 (defmulti ->operator ::type)
 
 (defmethod ->operator ::cut-crossover [cfg]
   (let [cross (cut-crossover cfg)]
-    (fn [pop {:keys [:chickn.core/elitism-rate :chickn.core/pop-size :chickn.core/rand-nth]}]
-      (let [n (-> (* (- 1.0 elitism-rate) pop-size) Math/round int)]
+    (fn [pop {:keys [:chickn.core/elitism-rate :chickn.core/pop-size :chickn.core/rand-nth]}] ;; FIXME rand-nth from op config
+      (let [n (-> (* (- 1.0 elitism-rate) pop-size) Math/round int)] ;; FIXME no cfg params should actually be used here
         (->>
           (let [pairs (/ (if (= (mod n 2) 0) n (inc n)) 2)]
             (take
@@ -136,7 +105,7 @@
           (into []))))))
 
 (defmethod ->operator ::rand-mutation [{:keys [::random-func ::rate ::mutation-func]}]
-  (fn [pop _]
+  (fn [pop _]                                               ;; FIXME cfg 1st param
     (map
       (fn [c]
         (assoc-in c [:genes]
