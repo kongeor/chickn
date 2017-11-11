@@ -86,7 +86,7 @@
         #_(println (selector pop cfg))
         (reporter pop)
         (cond
-          (terminated? best) {:solved? true :time (endf) :best best}
+          (terminated? best) {:solved? true :iteration (:iteration pop) :time (endf) :best best}
           (>= (:iteration pop) n) {:solved? false :time (endf)}
           :else (recur (let [mating-pop (map (fn [_] (selector pop cfg)) (range mating-pop-size))
                              elit (take elit-cnt (:pop pop))
@@ -108,7 +108,7 @@
 (def ascending compare)
 
 (comment
-  (let [chromo-len 256
+  (let [chromo-len 16
         one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         cfg {::chromo-gen #(repeatedly chromo-len one-or-zero)
              ::pop-size 30
@@ -129,7 +129,7 @@
                                                :rate          0.001
                                                :random-func   rand
                                                :mutation-func one-or-zero}]}]
-    (select-keys (evolve* cfg 10000) [:solved? :time])))
+    (select-keys (evolve* cfg 10000) [:solved? :iteration :time])))
 
 (comment
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
