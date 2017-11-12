@@ -7,7 +7,8 @@
                    {:genes [0 0 1 2] :age 2}
                    {:genes [0 1 0 0]}]}
         cfg {:chickn.core/fitness (fn [genes] (apply + genes))
-             :chickn.core/comparator chickn.core/descending}]
+             :chickn.core/monitor chickn.util/noop
+             :chickn.core/comparator chickn.core/higher-is-better}]
     (is (= {:pop-avg 2.0
             :std-dev 1.0
             :age-avg 2.0

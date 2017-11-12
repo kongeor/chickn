@@ -6,7 +6,8 @@
             [chickn.util :as util]
             [chickn.math :as math]))
 
-(defn eval-pop [{fitness ::fitness comparator ::comparator} pop]
+(defn eval-pop [{fitness ::fitness comparator ::comparator monitor ::monitor} pop]
+  (monitor :chickn.event/evaluating-genotype "Evaluating genotype" {:genotype pop})
   (let [iteration ((fnil inc 0) (:iteration pop))
         pop (vec (map (fn [{:keys [genes age]}]
                         {:fitness (fitness genes)
@@ -104,7 +105,10 @@
     (monitor :chickn.events/adjusting-size (str "Adjusting chromos size: " n " to pop size: " pop-size) {})
     (cond
       (> n pop-size) (take n chromos)
-      (< n pop-size) (concat (repeatedly (- pop-size n) chromo-gen) chromos))))
+      (< n pop-size) (let [adjusted (concat (map genes->chromo
+                                                 (repeatedly (- pop-size n) chromo-gen)) chromos)]
+                       (monitor :chickn.events/adjusted-size "Adjusted size" {:chromos adjusted})
+                       adjusted))))
 
 (defn evolve
   ([{:keys [::selectors ::operators ::monitor] :as cfg} genotype]

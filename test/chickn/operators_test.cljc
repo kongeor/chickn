@@ -59,7 +59,7 @@
                                    (nth chromos 2) (nth chromos 3)
                                    (second chromos) (first chromos)
                                    (nth chromos 3) (nth chromos 2))
-            cfg {:chickn.core/pop-size 4 :chickn.core/elitism-rate 0 :chickn.core/rand-nth rnd-chromos}
+            cfg {}
             rf (val-cycle 2 4 1 3)]
         (is (= [{:genes [6 1 3 4 2 5] :fitness 0 :age 0}
                 {:genes [4 1 5 6 3 2] :fitness 0 :age 0}
@@ -68,13 +68,16 @@
                ((->operator #:chickn.operators{:type         :chickn.operators/ordered-crossover
                                                :rate         1.0
                                                :pointcuts    1
-                                               :random-point rf}) pop cfg)))))))
+                                               :random-point rf
+                                               :rand-nth rnd-chromos}) cfg pop 4)))))))
 
 (deftest swap-mutate-pop-test
   (testing "swap mutate pop wiring"
     (with-redefs [shuffle identity]
       (let [pop (chickn.core/raw-pop->pop (partition 4 (range 16))) ;; FIXME
+            chromos (:pop pop)
             rnd-genes (val-cycle 1 3)
+            cfg {}
             rf (val-cycle 0.5 0 0.5 0.5)]
         (is (= [{:genes [0 1 2 3] :fitness 0 :age 0}
                 {:genes [4 7 6 5] :fitness 0 :age 0}
@@ -83,4 +86,4 @@
                ((->operator #:chickn.operators{:type         :chickn.operators/swap-mutation
                                                :rate         0.3
                                                :rand-nth rnd-genes
-                                               :random-func  rf}) (:pop pop) {})))))))
+                                               :random-func  rf}) cfg chromos -1)))))))

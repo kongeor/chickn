@@ -9,7 +9,7 @@
                    {:genes [4 5 2 3] :fitness 3}
                    {:genes [8 9 2 3] :fitness 2}
                    {:genes [12 13 2 3] :fitness 1}]
-          cfg {:chickn.core/comparator chickn.core/descending}
+          cfg {:chickn.core/comparator chickn.core/higher-is-better}
           make-roulette (fn [random-func]
                           (->selector #:chickn.selectors{:type :chickn.selectors/roulette
                                                          :random-func random-func}))]
@@ -31,7 +31,7 @@
                    {:genes [8 9 2 3] :fitness 2}
                    {:genes [4 5 2 3] :fitness 3}
                    {:genes [0 1 2 3] :fitness 4}]
-          cfg {:chickn.core/comparator chickn.core/ascending}
+          cfg {:chickn.core/comparator chickn.core/lower-is-better}
           make-roulette (fn [random-func]
                           (->selector #:chickn.selectors{:type :chickn.selectors/roulette
                                                          :random-func random-func}))]
