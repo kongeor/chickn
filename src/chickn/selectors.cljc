@@ -4,12 +4,17 @@
 ; -------
 ; Spec
 
+(s/def ::rate (s/double-in :min 0 :max 1 :NaN false :infinite? false))
+
 (s/def ::random-func ifn?)
 
 (defmulti selector-type ::type)
 
 (defmethod selector-type ::roulette [_]
-  (s/keys :req [::type ::random-func]))
+  (s/keys :req [::type ::random-func ::rate]))
+
+(defmethod selector-type ::best [_]
+  (s/keys :req [::type ::rate]))
 
 (s/def ::selector (s/multi-spec selector-type ::type))
 
@@ -42,12 +47,20 @@
     (let [roulette-f (partial -roulette cfg selector-cfg chromos)]
       (repeatedly n roulette-f))))
 
+(defn best
+  [_]
+  (fn [_ chromos n]
+    (take n chromos)))
+
 ;; constructor funcs
 
 (defmulti ->selector ::type)
 
 (defmethod ->selector ::roulette [cfg]
   (roulette cfg))
+
+(defmethod ->selector ::best [cfg]
+  (best cfg))
 
 
 (comment

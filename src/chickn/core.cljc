@@ -108,9 +108,9 @@
 
 (defn evolve
   ([{:keys [::selectors ::operators ::monitor] :as cfg} genotype]
-    (let [elit-sels-cfgs (filter :chickn.selectors/:elit selectors)
+    (let [elit-sels-cfgs (filter :chickn.selectors/elit selectors)
           _ (monitor :chickn.events/selected-elit-cfgs "Selected elit configs" {:cfgs elit-sels-cfgs})
-          sels-cfgs (remove :chickn.selectors/:elit selectors)
+          sels-cfgs (remove :chickn.selectors/elit selectors)
           _ (monitor :chickn.events/selected-cfgs "Selected selector configs" {:cfgs sels-cfgs})
           elit-chromos (mark-elits (apply-sels cfg elit-sels-cfgs genotype))
           _ (monitor :chickn.events/elits-marked "Marked elits" {:chromos elit-chromos})
@@ -173,22 +173,26 @@
 (s/def ::config (s/keys :req [::init-pop ::elitism-rate ::pop-size ::terminated? ::operators]
                         :req-un [::fitness]))
 
-(def descending #(compare %2 %1))
-(def ascending compare)
+(def higher-is-better #(compare %2 %1))
+(def lower-is-better compare)
 
 (comment
-  (let [chromo-len 16
+  (let [chromo-len 256
         one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         cfg {::chromo-gen #(repeatedly chromo-len one-or-zero)
              ::pop-size 30
-             ::elitism-rate 0.1                             ;; FIXME this will be substituted by threshold selector
              ::monitor util/noop
+             ;::monitor monitor
              ::terminated? (fn [c] (every? #(= 1 %) c))
              ::fitness      (fn [c] (apply + c))
-             ::comparator  descending                       ;; FIXME rename to better-fitness increasing/decreasing
+             ::comparator  higher-is-better
              ::reporter    util/simple-printer
-             ::selectors   [#:chickn.selectors{:type        :chickn.selectors/roulette
-                                               :rate 1
+             ::selectors   [#:chickn.selectors{:type        :chickn.selectors/best
+                                               :elit        true
+                                               :rate        0.1
+                                               :random-func rand}
+                            #:chickn.selectors{:type        :chickn.selectors/roulette
+                                               :rate        0.3
                                                :random-func rand}]
              ::operators   [#:chickn.operators{:type         :chickn.operators/cut-crossover
                                                :rate         0.3
@@ -197,13 +201,13 @@
                                                :random-point rand-nth
                                                :random-func  rand}
                             #:chickn.operators{:type          :chickn.operators/rand-mutation
-                                               :rate          0.001
+                                               :rate          0.01
                                                :random-func   rand
                                                :mutation-func one-or-zero}]}
         genotype (init cfg)]
     #_(remove :chickn.selectors/:elit
             (::selectors cfg))
-    (evolve cfg genotype 100)
+    (evolve cfg genotype 2000)
     #_(select-keys (evolve* cfg 10000) [:solved? :iteration :time])))
 
 (comment
