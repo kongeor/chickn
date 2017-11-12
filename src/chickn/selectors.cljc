@@ -17,10 +17,9 @@
 ; -------
 ; Natural Selectors
 
-(defn roulette
-  [{:keys [::random-func]}]
-  (fn [{:keys [pop]} {:keys [chickn.core/comparator]}]
-    (let [pop-size (count pop)
+(defn -roulette
+  [{comparator :chickn.core/comparator} {:keys [::random-func]} pop]                             ;; FIXME rename
+  (let [pop-size (count pop)
           max-fit (:fitness (first (sort-by :fitness #(compare %2 %1) pop)))
           pop (shuffle pop)
           fits-scaled (mapv #(/ (:fitness %) max-fit) pop)
@@ -35,7 +34,13 @@
           (let [w (+ w (nth fits-scaled i))]
             (if (>= w roulette-pos)
               (nth pop i)
-              (recur w (inc i)))))))))
+              (recur w (inc i))))))))
+
+(defn roulette
+  [selector-cfg]
+  (fn [cfg chromos n]
+    (let [roulette-f (partial -roulette cfg selector-cfg chromos)]
+      (repeatedly n roulette-f))))
 
 ;; constructor funcs
 

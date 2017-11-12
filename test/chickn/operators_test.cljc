@@ -30,11 +30,11 @@
 
 (deftest crossover-pop-test
   (testing "crossover pop wiring"
-    (with-redefs [shuffle identity]
-      (let [pop (chickn.core/raw-pop->pop (partition 4 (range 16))) ;; FIXME
-            chromos (:pop pop)
+    (with-redefs [shuffle identity]                         ;; TODO check if needed
+      (let [genotype (chickn.core/raw-pop->pop (partition 4 (range 16))) ;; FIXME
+            chromos (:pop genotype)
             rnd-chromos (val-cycle (first chromos) (second chromos) (nth chromos 2) (nth chromos 3))
-            cfg {:chickn.core/pop-size 4 :chickn.core/elitism-rate 0 :chickn.core/rand-nth rnd-chromos}
+            cfg {}
             rf (constantly 0)]
         (is (= [{:genes [0 1 6 7] :fitness 0 :age 0}
                 {:genes [4 5 2 3] :fitness 0 :age 0}
@@ -43,8 +43,9 @@
                ((->operator #:chickn.operators{:type         :chickn.operators/cut-crossover
                                                :rate         1.0
                                                :pointcuts    1
+                                               :rand-nth rnd-chromos
                                                :random-point (fn [& _] 2)
-                                               :random-func  rf}) pop cfg)))))))
+                                               :random-func  rf}) cfg pop 4)))))))
 
 (deftest ordered-crossover-pop-test
   (testing "ordered crossover wiring"
