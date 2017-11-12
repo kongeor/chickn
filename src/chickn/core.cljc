@@ -2,10 +2,12 @@
   (:require [clojure.spec.alpha :as s]
             [chickn.operators :refer [->operator]]
             [chickn.selectors :refer [->selector]]
+            [chickn.events :refer [monitor]]
             [chickn.util :as util]
             [chickn.math :as math]))
 
-(defn eval-pop [{fitness ::fitness comparator ::comparator} pop]
+(defn eval-pop [{fitness ::fitness comparator ::comparator monitor ::monitor} pop]
+  (monitor :chickn.event/evaluating-genotype "Evaluating genotype" {:genotype pop})
   (let [iteration ((fnil inc 0) (:iteration pop))
         pop (vec (map (fn [{:keys [genes age]}]
                         {:fitness (fitness genes)
@@ -63,16 +65,87 @@
 (defn init
   "For the given cfg initialize the genotype.
    Returns a tuple of [cfg, genotype]"
-  [cfg])
+  [{:keys [::chromo-gen ::pop-size] :as cfg}]
+  (let [raw-genotype (raw-pop->pop (repeatedly pop-size chromo-gen))
+        genotype (eval-pop cfg raw-genotype)]
+    genotype))
+
+
+(defn apply-sels
+  "Applies the provided configurations on the genotype
+   and returns the vector of selected chromosomes"
+  [{:keys [::pop-size ::monitor] :as cfg} sels-cfgs {pop :pop}]
+  (apply concat
+         (map (fn [sel-cfg]
+                (let [sel-f (->selector sel-cfg)
+                      rate (:chickn.selectors/rate sel-cfg)
+                      n (Math/ceil (* pop-size rate))
+                      chromos (sel-f cfg pop n)
+                      _ (monitor :chickn.events/applied-selector "Selector applied" {:selector sel-cfg
+                                                                                     :chromos chromos})]
+                  chromos)) sels-cfgs)))
+
+(defn mark-elits [chromos]
+  (mapv #(assoc % :elit true) chromos))
+
+(defn apply-ops [{:keys [::monitor] :as cfg} ops-cfgs chromos]
+  (apply concat
+         (map (fn [op-cfg]
+                (let [op-f (->operator op-cfg)
+                      rate (:chickn.operators/rate op-cfg)
+                      n (Math/ceil (* (count chromos) rate))
+                      operated (op-f cfg chromos n)
+                      _ (monitor :chickn.events/operator-applied "Operator applied" {:operator op-cfg
+                                                                                     :in-chromos chromos
+                                                                                     :out-chromos operated})]
+                  operated)) ops-cfgs)))
+
+(defn adjust-size [{pop-size ::pop-size chromo-gen ::chromo-gen monitor ::monitor} chromos]
+  (let [n (count chromos)]
+    (monitor :chickn.events/adjusting-size (str "Adjusting chromos size: " n " to pop size: " pop-size) {})
+    (cond
+      (> n pop-size) (take n chromos)
+      (< n pop-size) (let [adjusted (concat (map genes->chromo
+                                                 (repeatedly (- pop-size n) chromo-gen)) chromos)]
+                       (monitor :chickn.events/adjusted-size "Adjusted size" {:chromos adjusted})
+                       adjusted))))
 
 (defn evolve
-  ([cfg pop])
-  ([cfg pop n]))
+  ([{:keys [::selectors ::operators ::monitor] :as cfg} genotype]
+    (let [elit-sels-cfgs (filter :chickn.selectors/elit selectors)
+          _ (monitor :chickn.events/selected-elit-cfgs "Selected elit configs" {:cfgs elit-sels-cfgs})
+          sels-cfgs (remove :chickn.selectors/elit selectors)
+          _ (monitor :chickn.events/selected-cfgs "Selected selector configs" {:cfgs sels-cfgs})
+          elit-chromos (mark-elits (apply-sels cfg elit-sels-cfgs genotype))
+          _ (monitor :chickn.events/elits-marked "Marked elits" {:chromos elit-chromos})
+          selected-chromos (apply-sels cfg sels-cfgs genotype)
+          _ (monitor :chickn.events/chromos-selected "Selected chromos" {:chromos selected-chromos})
+          elits-and-rest-chromos (concat elit-chromos selected-chromos)
+          operated-chromos (apply-ops cfg operators elits-and-rest-chromos)
+          no-elits (remove :elit operated-chromos)
+          new-gen-chromos (concat elit-chromos no-elits)
+          adjusted-chromos (adjust-size cfg new-gen-chromos)
+          new-genotype (eval-pop cfg (assoc genotype :pop adjusted-chromos))]
+      [cfg new-genotype]))
+  ([{:keys [::terminated? ::reporter] :as cfg} genotype n]
+   (let [start-time (util/now-millis)
+         end-time-f #(- (util/now-millis) start-time)]
+     (loop [cfg cfg
+            genotype genotype]
+       (let [best (:best-chromo genotype)]
+         (reporter genotype)
+         (cond
+           (terminated? best) {:solved? true :iteration (:iteration genotype) :time (end-time-f) :best best}
+           (>= (:iteration genotype) n) {:solved? false :iteration (:iteration genotype) :time (end-time-f)}
+           :else (let [[cfg' genotype'] (evolve cfg genotype)]
+                   (recur cfg' genotype'))))))))
+
+
 
 (defn evolve* [{:keys [::chromo-gen ::pop-size ::terminated?
                        ::selector ::operators ::reporter ::elitism-rate] :as cfg} n]
   (let [pop (raw-pop->pop (repeatedly pop-size chromo-gen))
-        selector (->selector selector)
+        selectors (map ->selector selector)
         opts (map ->operator operators)
         ;evol (fn [pop] (assoc pop :pop (reduce #(%2 %1 cfg) (:pop pop) opts)))
         evol (fn [pop] (reduce #(%2 %1 cfg) pop opts))
@@ -86,7 +159,7 @@
         #_(println (selector pop cfg))
         (reporter pop)
         (cond
-          (terminated? best) {:solved? true :time (endf) :best best}
+          (terminated? best) {:solved? true :iteration (:iteration pop) :time (endf) :best best}
           (>= (:iteration pop) n) {:solved? false :time (endf)}
           :else (recur (let [mating-pop (map (fn [_] (selector pop cfg)) (range mating-pop-size))
                              elit (take elit-cnt (:pop pop))
@@ -104,11 +177,45 @@
 (s/def ::config (s/keys :req [::init-pop ::elitism-rate ::pop-size ::terminated? ::operators]
                         :req-un [::fitness]))
 
-(def descending #(compare %2 %1))
-(def ascending compare)
+(def higher-is-better #(compare %2 %1))
+(def lower-is-better compare)
 
 (comment
   (let [chromo-len 256
+        one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
+        cfg {::chromo-gen #(repeatedly chromo-len one-or-zero)
+             ::pop-size 30
+             ::monitor util/noop
+             ;::monitor monitor
+             ::terminated? (fn [c] (every? #(= 1 %) c))
+             ::fitness      (fn [c] (apply + c))
+             ::comparator  higher-is-better
+             ::reporter    util/simple-printer
+             ::selectors   [#:chickn.selectors{:type        :chickn.selectors/best
+                                               :elit        true
+                                               :rate        0.1
+                                               :random-func rand}
+                            #:chickn.selectors{:type        :chickn.selectors/roulette
+                                               :rate        0.3
+                                               :random-func rand}]
+             ::operators   [#:chickn.operators{:type         :chickn.operators/cut-crossover
+                                               :rate         0.3
+                                               :pointcuts    1
+                                               :rand-nth rand-nth
+                                               :random-point rand-nth
+                                               :random-func  rand}
+                            #:chickn.operators{:type          :chickn.operators/rand-mutation
+                                               :rate          0.01
+                                               :random-func   rand
+                                               :mutation-func one-or-zero}]}
+        genotype (init cfg)]
+    #_(remove :chickn.selectors/:elit
+            (::selectors cfg))
+    (evolve cfg genotype 2000)
+    #_(select-keys (evolve* cfg 10000) [:solved? :iteration :time])))
+
+(comment
+  (let [chromo-len 16
         one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))
         cfg {::chromo-gen #(repeatedly chromo-len one-or-zero)
              ::pop-size 30
@@ -118,8 +225,8 @@
              ::fitness      (fn [c] (apply + c))
              ::comparator  descending                       ;; FIXME rename to better-fitness increasing/decreasing
              ::reporter    util/simple-printer
-             ::selector    #:chickn.selectors{:type        :chickn.selectors/roulette ;; FIXME make vector
-                                              :random-func rand} ;; FIXME should accept rate
+             ::selector    [#:chickn.selectors{:type        :chickn.selectors/roulette ;; FIXME make vector
+                                              :random-func rand}] ;; FIXME should accept rate
              ::operators   [#:chickn.operators{:type         :chickn.operators/cut-crossover
                                                :rate         0.3
                                                :pointcuts    1
@@ -129,7 +236,7 @@
                                                :rate          0.001
                                                :random-func   rand
                                                :mutation-func one-or-zero}]}]
-    (select-keys (evolve* cfg 10000) [:solved? :time])))
+    (select-keys (evolve* cfg 10000) [:solved? :iteration :time])))
 
 (comment
   (let [one-or-zero (fn [& _] (if (> (rand) 0.5) 1 0))

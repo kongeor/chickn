@@ -80,32 +80,30 @@
 
 (defmulti ->operator ::type)
 
-(defmethod ->operator ::cut-crossover [cfg]
+(defmethod ->operator ::cut-crossover [{:keys [::rand-nth] :as cfg}]
   (let [cross (cut-crossover cfg)]
-    (fn [pop {:keys [:chickn.core/elitism-rate :chickn.core/pop-size :chickn.core/rand-nth]}] ;; FIXME rand-nth from op config
-      (let [n (-> (* (- 1.0 elitism-rate) pop-size) Math/round int)] ;; FIXME no cfg params should actually be used here
-        (->>
-          (let [pairs (/ (if (= (mod n 2) 0) n (inc n)) 2)]
-            (take
-              pairs
-              (repeatedly
-                #(cross (rand-nth pop) (rand-nth pop)))))
-          (apply concat)
-          (take n)
-          (into []))))))
+    (fn [_ pop n]
+      (->>
+        (let [pairs (/ (if (= (mod n 2) 0) n (inc n)) 2)]
+          (take
+            pairs
+            (repeatedly
+              #(cross (rand-nth pop) (rand-nth pop)))))
+        (apply concat)
+        (take n)
+        (into [])))))
 
-(defmethod ->operator ::ordered-crossover [cfg]
+(defmethod ->operator ::ordered-crossover [{:keys [::rand-nth] :as cfg}]
   (let [cross (ordered-crossover cfg)]
-    (fn [pop {:keys [:chickn.core/elitism-rate :chickn.core/pop-size :chickn.core/rand-nth]}]
-      (let [n (-> (* (- 1.0 elitism-rate) pop-size) Math/round int)]
-        (->>
-          (repeatedly
-            #(cross (rand-nth pop) (rand-nth pop)))
-          (take n)
-          (into []))))))
+    (fn [_ chromos n ]
+      (->>
+        (repeatedly
+          #(cross (rand-nth chromos) (rand-nth chromos)))
+        (take n)
+        (into [])))))
 
 (defmethod ->operator ::rand-mutation [{:keys [::random-func ::rate ::mutation-func]}]
-  (fn [pop _]                                               ;; FIXME cfg 1st param
+  (fn [_ pop n]                                               ;; FIXME, what to do with n? FIXME add test
     (map
       (fn [c]
         (assoc-in c [:genes]
@@ -114,7 +112,7 @@
                    %) (:genes c)))) pop)))
 
 (defmethod ->operator ::swap-mutation [{:keys [::rand-nth ::rate ::random-func]}]
-  (fn [pop _]
+  (fn [_ pop _]                                             ;; Notice n is ignored
     (mapv
       (fn [c]
         (if (> rate (random-func))
