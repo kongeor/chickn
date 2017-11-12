@@ -33,14 +33,14 @@
               #(for [i (range cities-cnt)]
                 {:id (keyword (str "c" i)) :x (rand-int 100) :y (rand-int 100)})))
 
-(println (init-pop 30))
+#_(println (init-pop 30))
 
-(chickn/raw-pop->pop (init-pop 30))
+#_(chickn/raw-pop->pop (init-pop 30))
 
 (defn rnd-index [coll]
   (int (* (rand) (count coll))))
 
-(rnd-index [0 0 0 0 0 0 0])
+#_(rnd-index [0 0 0 0 0 0 0])
 
 
 (comment
