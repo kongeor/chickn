@@ -1,5 +1,8 @@
 (ns chickn.math)
 
+(defn rnd-index [coll]
+  (int (* (rand) (count coll))))                            ;; FIXME make rand configurable
+
 (defn mean [coll]
   (let [sum (apply + coll)
         count (count coll)]

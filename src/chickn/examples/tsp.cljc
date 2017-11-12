@@ -1,7 +1,8 @@
 (ns chickn.examples.tsp
   (:require [chickn.core :as chickn]
             [chickn.events :refer [monitor]]
-            [chickn.util :refer [noop simple-printer]]))
+            [chickn.util :refer [noop simple-printer]]
+            [chickn.math :refer [rnd-index]]))
 
 (def cities [{:name :A :x 1 :y 1}
              {:name :B :x 5 :y 1}
@@ -37,9 +38,6 @@
 
 #_(chickn/raw-pop->pop (init-pop 30))
 
-(defn rnd-index [coll]
-  (int (* (rand) (count coll))))
-
 #_(rnd-index [0 0 0 0 0 0 0])
 
 
@@ -61,7 +59,7 @@
                                                           :random-func rand}]
                           :operators    [#:chickn.operators{:type         :chickn.operators/ordered-crossover
                                                             :rate         0.3
-                                                            :random-point (partial rnd-index (range 8))
+                                                            :random-point rnd-index
                                                             :rand-nth     rand-nth}
                                          #:chickn.operators{:type        :chickn.operators/swap-mutation
                                                             :rate        0.01

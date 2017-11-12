@@ -52,7 +52,9 @@
   (fn [{g1 :genes} {g2 :genes}]
     (let [g1 (vec g1)
           g2 (vec g2)
-          [p1 p2] (sort (repeatedly 2 random-point))
+          p1 (random-point g1)
+          p2 (random-point g2)
+          [p1 p2] (sort [p1 p2])
           cut (subvec g1 p1 p2)
           rp (concat (drop p2 g2) (take p1 g2) (subvec g2 p1 p2))]
       (->
