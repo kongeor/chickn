@@ -45,17 +45,23 @@
                   :elitism-rate   0.1
                   :random-func    rand
                   :reporter       util/simple-printer})
-;--------------
-; Playground
+;; Spec
 
-(s/def ::crossover-rate (s/double-in :min 0 :max 1 :NaN false :infinite? false))
-(s/def ::mutation-rate (s/double-in :min 0 :max 1 :NaN false :infinite? false))
-(s/def ::elitism-rate (s/double-in :min 0 :max 1 :NaN false :infinite? false))
-(s/def ::random-func ifn?)
+(s/def ::chromo-gen ifn?)
+(s/def ::pop-size int?)
+(s/def ::terminated? ifn?)
+(s/def ::monitor ifn?)
+(s/def ::fitness ifn?)
+(s/def ::comparator ifn?)
 (s/def ::reporter ifn?)
 
-(s/def ::cfg (s/keys :req-un [::crossover-rate ::mutation-rate ::elitism-rate
-                              ::random-func ::reporter]))
+(s/def ::selectors (s/+ :chickn.selectors/selector))
+(s/def ::operators (s/+ :chickn.operators/operator))
+
+(s/def ::config (s/keys :req [::chromo-gen ::pop-size ::terminated? ::monitor
+                              ::fitness ::comparator ::reporter ::selectors
+                              ::operators]))
+
 
 ;; FIXME implement
 ;; FIXME rename top level pop -> genotype
@@ -64,7 +70,7 @@
 
 (defn init
   "For the given cfg initialize the genotype.
-   Returns a tuple of [cfg, genotype]"
+   Returns an initialized and evaluated genotype (i.e. first gen)"
   [{:keys [::chromo-gen ::pop-size] :as cfg}]
   (let [raw-genotype (raw-pop->pop (repeatedly pop-size chromo-gen))
         genotype (eval-pop cfg raw-genotype)]
@@ -141,6 +147,9 @@
                    (recur cfg' genotype'))))))))
 
 
+;--------------
+; Playground
+
 
 (defn evolve* [{:keys [::chromo-gen ::pop-size ::terminated?
                        ::selector ::operators ::reporter ::elitism-rate] :as cfg} n]
@@ -166,16 +175,6 @@
                              new-gen (evol mating-pop)
                              all-new (concat elit new-gen)]
                          (assoc pop :pop all-new))))))))
-
-;; Spec
-
-(s/def ::fitness ifn?)
-(s/def ::init-pop ifn?)
-(s/def ::terminated? ifn?)
-(s/def ::operators (s/+ :chickn.operators/operator))
-
-(s/def ::config (s/keys :req [::init-pop ::elitism-rate ::pop-size ::terminated? ::operators]
-                        :req-un [::fitness]))
 
 (def higher-is-better #(compare %2 %1))
 (def lower-is-better compare)

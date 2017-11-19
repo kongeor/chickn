@@ -3,6 +3,9 @@
 (defn rnd-index [coll]
   (int (* (rand) (count coll))))                            ;; FIXME make rand configurable
 
+(defn rand-between [min max]
+  (+ (* (rand) (- max min)) min))
+
 (defn mean [coll]
   (let [sum (apply + coll)
         count (count coll)]

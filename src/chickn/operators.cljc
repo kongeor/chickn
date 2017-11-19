@@ -9,7 +9,6 @@
 
 (s/def ::type keyword?)
 (s/def ::rate ::rate-num)
-(s/def ::elitism ::rate-num)
 (s/def ::pointcuts integer?)
 (s/def ::random-point ifn?)                                 ;; a func accepting a chromosome return a random position
 (s/def ::random-func ifn?)                                  ;; duplicate with selectors?
@@ -17,14 +16,14 @@
 
 (defmulti operator-type ::type)
 
-(defmethod operator-type ::order-crossover [_]
-  (s/keys :req [::type ::rate ::elitism ::random-point]))
+(defmethod operator-type ::ordered-crossover [_]
+  (s/keys :req [::type ::rate ::random-point ::rand-nth]))
 
 (defmethod operator-type ::cut-crossover [_]
-  (s/keys :req [::type ::rate ::pointcuts ::elitism ::random-point]))
+  (s/keys :req [::type ::rate ::pointcuts ::random-point ::rand-nth]))
 
 (defmethod operator-type ::rand-mutation [_]
-  (s/keys :req [::type ::rate ::random-func ::elitism ::mutation-func]))
+  (s/keys :req [::type ::rate ::random-func ::mutation-func]))
 
 (s/def ::operator (s/multi-spec operator-type ::type))
 
@@ -97,7 +96,7 @@
 
 (defmethod ->operator ::ordered-crossover [{:keys [::rand-nth] :as cfg}]
   (let [cross (ordered-crossover cfg)]
-    (fn [_ chromos n ]
+    (fn [_ chromos n]
       (->>
         (repeatedly
           #(cross (rand-nth chromos) (rand-nth chromos)))
