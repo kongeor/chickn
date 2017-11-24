@@ -161,6 +161,9 @@
            :else (let [[cfg' genotype'] (evolve cfg genotype)]
                    (recur cfg' genotype'))))))))
 
+(defn init-and-evolve [cfg n]
+  (let [genotype (init cfg)]
+    (evolve cfg genotype n)))
 
 ;--------------
 ; Playground

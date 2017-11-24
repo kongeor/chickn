@@ -1,0 +1,54 @@
+(ns chickn.bench
+  (:require [chickn.core :refer [init-and-evolve]]
+            [chickn.math :refer [cartesian-product]]
+            [chickn.examples.ones :refer [cfg-ones]]))
+
+(defn overr->vec
+  "Given a override map returnes pairs
+
+   For example:
+
+  (overr->vec  {[:c1] [0 0.5 1] [:c2] [2 4 6]}) =>
+
+  [[[[:c1] 0] [[:c1] 0.5] [[:c1] 1]] [[[:c2] 2] [[:c2] 4] [[:c2] 6]]]
+  "
+  [overr]
+  (into [] (map (fn [[k vs]] (mapv (fn [v] [k v]) vs)) overr))
+
+
+(defn make-overr-product [overr]
+  (->>
+    (apply cartesian-product (overr->vec overr))
+    (mapv #(apply concat %))
+    (mapv #(apply hash-map %))))
+
+(defn apply-overrides [cfg overr]
+  (reduce (fn [acc op] (apply assoc-in acc op)) cfg overr))
+
+(defn make-all-overrides [cfg overrides]
+  (mapv #(apply-overrides cfg %) (make-overr-product overrides)))
+
+(defn experiment [cfg overrides n]
+  (let [cfgs (make-all-overrides cfg overrides)]
+    (for [cfg' cfgs]
+      (let [res (repeatedly n #(chickn.core/evolve* cfg' 1000))
+            time (float (/ (reduce + (map :time res)) n))]
+        (assoc s :time time)))))
+
+
+(def overrides
+  {[:chickn.core/operators 0 :chickn.operators/rate] [0.1 0.5 0.9]
+   [:chickn.core/operators 1 :chickn.operators/rate] [0.1 0.5 0.9]})
+
+(def overrides {[:c1] [0 0.5 1]
+                [:c2] [2 4 6]})
+
+
+(clojure.pprint/pprint (overr->vec overrides))
+
+(clojure.pprint/pprint (make-overr-product overrides))
+(clojure.pprint/pprint (make-cfgs overrides))
+(clojure.pprint/pprint (overr->vec overrides))
+(clojure.pprint/pprint (apply-overrides cfg-ones (first (make-overr-product overrides))))
+
+(init-and-evolve (first (make-all-overrides cfg-ones overrides)) 10)
