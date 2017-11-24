@@ -40,11 +40,28 @@
   (partition chromo-size (repeatedly (* pop-size chromo-size) rf)))
 
 
-(def default-cfg {:crossover-rate 0.3
-                  :mutation-rate  0.05
-                  :elitism-rate   0.1
-                  :random-func    rand
-                  :reporter       util/simple-printer})
+(def higher-is-better #(compare %2 %1))
+(def lower-is-better compare)
+
+(def default-cfg
+  {::pop-size 30
+   ::monitor util/noop
+   ::comparator  lower-is-better
+   ::reporter    util/simple-printer
+   ::selectors   [#:chickn.selectors{:type :chickn.selectors/best
+                                     :elit true
+                                     :rate 0.1
+                                     :random-func rand}
+                  #:chickn.selectors{:type        :chickn.selectors/roulette
+                                     :rate        0.3
+                                     :random-func rand}]
+   ::operators   [#:chickn.operators{:type      :chickn.operators/cut-crossover
+                                     :rate      0.3
+                                     :pointcuts 1
+                                     :rand-nth     rand-nth
+                                     :random-point rand-nth
+                                     :random-func  rand}]})
+
 ;; Spec
 
 (s/def ::chromo-gen ifn?)
@@ -66,8 +83,6 @@
 ;; FIXME implement
 ;; FIXME rename top level pop -> genotype
 ;; FIXME implement monitor func for auditing and debugging
-;; FIXME make cfg always the first param
-
 (defn init
   "For the given cfg initialize the genotype.
    Returns an initialized and evaluated genotype (i.e. first gen)"
@@ -175,9 +190,6 @@
                              new-gen (evol mating-pop)
                              all-new (concat elit new-gen)]
                          (assoc pop :pop all-new))))))))
-
-(def higher-is-better #(compare %2 %1))
-(def lower-is-better compare)
 
 (comment
   (let [chromo-len 256
