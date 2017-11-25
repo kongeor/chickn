@@ -1,7 +1,7 @@
 (ns chickn.bench
   (:require [clojure.pprint :as pp]
             [chickn.core :refer [init-and-evolve]]
-            [chickn.math :refer [cartesian-product]]
+            [chickn.math :refer [cartesian-product mean]]
             [chickn.util :refer [noop]]
             [chickn.examples.ones :refer [cfg-ones]]))
 
@@ -35,8 +35,9 @@
   (let [cfgs (make-all-overrides cfg overrides)]
     (for [cfg' cfgs]
       (let [res (repeatedly n #(init-and-evolve cfg' iters))
-            time (float (/ (reduce + (map :time res)) n))]
-        (assoc cfg' :time time)))))
+            time (float (mean (map :time res)))
+            fitness (float (mean (map #(get-in % [:genotype :best-fitness]) res)))]
+        (assoc cfg' :time time :fitness fitness)))))
 
 (defn get-override-cols [overrides names]
   (->> (vec (keys overrides))
@@ -47,17 +48,12 @@
 
 (defn pp-experiment [cfg overrides iters n names]
   (let [res (experiment cfg overrides iters n)
-        cols (conj (vec (keys overrides)) [:time])
+  ;      _ (pp/pprint (first res))
+        cols (conj (vec (keys overrides)) [:time] [:fitness])
         cols' (get-override-cols overrides names)
-        cols' (conj cols' "time") ;; FIXME
+        cols' (conj cols' "time" "fitness") ;; FIXME
         res' (map (fn [r] (reduce #(assoc % (get names %2) (get-in r %2)) {}  cols)) res)]
     (pp/print-table cols' res')))
-
-#_(pp-experiment cfg-ones overrides 10 10 names)
-
-(def foo {:a 1})
-(get foo :b)
-
 
 (def overrides
   {[:chickn.core/reporter] [noop]
@@ -69,13 +65,10 @@
   {[:chickn.core/pop-size] "pop size"
    [:chickn.core/operators 0 :chickn.operators/rate] "crossover rate"
    [:chickn.core/operators 1 :chickn.operators/rate] "mutation rate"
-   [:time] "time"})
+   [:time] "time"
+   [:fitness] "fitness"})
 
-
-
-(get-override-cols overrides names)
-
-
+#_(pp-experiment cfg-ones overrides 10 10 names)
 
 #_(def overrides {[:c1] [0 0.5 1]}
                 [:c2] [2 4 6])

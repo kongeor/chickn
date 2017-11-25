@@ -156,8 +156,8 @@
        (let [best (:best-chromo genotype)]
          (reporter genotype)
          (cond
-           (terminated? best) {:solved? true :iteration (:iteration genotype) :time (end-time-f) :best best}
-           (>= (:iteration genotype) n) {:solved? false :iteration (:iteration genotype) :time (end-time-f)}
+           (terminated? best) {:solved? true :iteration (:iteration genotype) :time (end-time-f) :best best :genotype genotype}
+           (>= (:iteration genotype) n) {:solved? false :iteration (:iteration genotype) :time (end-time-f) :genotype genotype}
            :else (let [[cfg' genotype'] (evolve cfg genotype)]
                    (recur cfg' genotype'))))))))
 
