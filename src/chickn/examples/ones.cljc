@@ -23,7 +23,7 @@
    :comparator higher-is-better})
 
 (def cfg-zeros-base
-  (merge cfg-ones
+  (merge cfg-ones-base
     #:chickn.core
     {:terminated? (fn [c] (every? #(= 0 %) c))
      :fitness #(apply + %)

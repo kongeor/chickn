@@ -1,6 +1,8 @@
 (ns chickn.bench
-  (:require [chickn.core :refer [init-and-evolve]]
+  (:require [clojure.pprint :as pp]
+            [chickn.core :refer [init-and-evolve]]
             [chickn.math :refer [cartesian-product]]
+            [chickn.util :refer [noop]]
             [chickn.examples.ones :refer [cfg-ones]]))
 
 (defn overr->vec
@@ -13,7 +15,7 @@
   [[[[:c1] 0] [[:c1] 0.5] [[:c1] 1]] [[[:c2] 2] [[:c2] 4] [[:c2] 6]]]
   "
   [overr]
-  (into [] (map (fn [[k vs]] (mapv (fn [v] [k v]) vs)) overr))
+  (into [] (map (fn [[k vs]] (mapv (fn [v] [k v]) vs)) overr)))
 
 
 (defn make-overr-product [overr]
@@ -28,27 +30,40 @@
 (defn make-all-overrides [cfg overrides]
   (mapv #(apply-overrides cfg %) (make-overr-product overrides)))
 
-(defn experiment [cfg overrides n]
+;; FIXME make :time configurable, allow aliasing and show fitness average
+(defn experiment [cfg overrides iters n]
   (let [cfgs (make-all-overrides cfg overrides)]
     (for [cfg' cfgs]
-      (let [res (repeatedly n #(chickn.core/evolve* cfg' 1000))
+      (let [res (repeatedly n #(init-and-evolve cfg' iters))
             time (float (/ (reduce + (map :time res)) n))]
-        (assoc s :time time)))))
+        (assoc cfg' :time time)))))
 
+(defn pp-experiment [cfg overrides iters n]
+  (let [res (experiment cfg overrides iters n)
+        cols (concat (conj (vec (keys overrides)) [:time]))
+        res' (map (fn [r] (reduce #(assoc % %2 (get-in r %2)) {}  cols)) res)]
+    (pp/print-table res')))
 
 (def overrides
-  {[:chickn.core/operators 0 :chickn.operators/rate] [0.1 0.5 0.9]
+  {[:chickn.core/reporter] [noop]
+   [:chickn.core/operators 0 :chickn.operators/rate] [0.1 0.5 0.9]
    [:chickn.core/operators 1 :chickn.operators/rate] [0.1 0.5 0.9]})
 
-(def overrides {[:c1] [0 0.5 1]
-                [:c2] [2 4 6]})
+#_(pp-experiment cfg-ones overrides 10 1)
 
 
-(clojure.pprint/pprint (overr->vec overrides))
+#_(def overrides {[:c1] [0 0.5 1]}
+                [:c2] [2 4 6])
 
-(clojure.pprint/pprint (make-overr-product overrides))
-(clojure.pprint/pprint (make-cfgs overrides))
-(clojure.pprint/pprint (overr->vec overrides))
-(clojure.pprint/pprint (apply-overrides cfg-ones (first (make-overr-product overrides))))
 
-(init-and-evolve (first (make-all-overrides cfg-ones overrides)) 10)
+#_(clojure.pprint/pprint (overr->vec overrides))
+
+#_(clojure.pprint/pprint (make-overr-product overrides))
+#_(clojure.pprint/pprint (make-cfgs overrides))
+#_(clojure.pprint/pprint (overr->vec overrides))
+#_(clojure.pprint/pprint (apply-overrides cfg-ones (first (make-overr-product overrides))))
+
+#_(pp/print-table)
+#_(pp/pprint (experiment cfg-ones overrides 10 10))
+
+#_(init-and-evolve (first (make-all-overrides cfg-ones overrides)) 10)
