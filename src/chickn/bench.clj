@@ -38,18 +38,43 @@
             time (float (/ (reduce + (map :time res)) n))]
         (assoc cfg' :time time)))))
 
-(defn pp-experiment [cfg overrides iters n]
+(defn get-override-cols [overrides names]
+  (->> (vec (keys overrides))
+       (map #(get names %))
+       (remove nil?)
+       (into [])))
+
+
+(defn pp-experiment [cfg overrides iters n names]
   (let [res (experiment cfg overrides iters n)
-        cols (concat (conj (vec (keys overrides)) [:time]))
-        res' (map (fn [r] (reduce #(assoc % %2 (get-in r %2)) {}  cols)) res)]
-    (pp/print-table res')))
+        cols (conj (vec (keys overrides)) [:time])
+        cols' (get-override-cols overrides names)
+        cols' (conj cols' "time") ;; FIXME
+        res' (map (fn [r] (reduce #(assoc % (get names %2) (get-in r %2)) {}  cols)) res)]
+    (pp/print-table cols' res')))
+
+#_(pp-experiment cfg-ones overrides 10 10 names)
+
+(def foo {:a 1})
+(get foo :b)
+
 
 (def overrides
   {[:chickn.core/reporter] [noop]
+   [:chickn.core/pop-size] [10 30 100]
    [:chickn.core/operators 0 :chickn.operators/rate] [0.1 0.5 0.9]
    [:chickn.core/operators 1 :chickn.operators/rate] [0.1 0.5 0.9]})
 
-#_(pp-experiment cfg-ones overrides 10 1)
+(def names
+  {[:chickn.core/pop-size] "pop size"
+   [:chickn.core/operators 0 :chickn.operators/rate] "crossover rate"
+   [:chickn.core/operators 1 :chickn.operators/rate] "mutation rate"
+   [:time] "time"})
+
+
+
+(get-override-cols overrides names)
+
 
 
 #_(def overrides {[:c1] [0 0.5 1]}
