@@ -3,6 +3,7 @@
   :url "https://github.com/kongeor/chickn"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :jvm-opts ["--add-modules" "java.xml.bind"]
   :dependencies [[org.clojure/clojure "1.9.0-beta2"]
                  [org.clojure/clojurescript "1.9.946"]]
   :plugins [[lein-cljsbuild "1.1.7"]
