@@ -4,10 +4,10 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ["--add-modules" "java.xml.bind"]
-  :dependencies [[org.clojure/clojure "1.9.0-beta2"]
-                 [org.clojure/clojurescript "1.9.946"]]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.10.238"]]
   :plugins [[lein-cljsbuild "1.1.7"]
-            [lein-doo "0.1.8"]]
+            [lein-doo "0.1.10"]]
   :profiles {:dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
   :aliases {"testjs"  ["doo" "phantom" "test" "once"]
             "testall" ["do" "clean" ["test"] ["doo" "phantom" "test" "once"]]}
