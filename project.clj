@@ -8,8 +8,9 @@
   :plugins [[lein-cljsbuild "1.1.8"]
             [lein-doo "0.1.11"]]
   :profiles {:dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
-  :aliases {"testjs"  ["doo" "chrome" "test" "once"]
-            "testall" ["do" "clean" ["test"] ["doo" "chrome" "test" "once"]]}
+  :doo {:alias {:browsers [:chrome-headless :firefox-headless]}}
+  :aliases {"testjs"  ["doo" "browsers" "test" "once"]
+            "testall" ["do" "clean" ["test"] ["doo" "browsers" "test" "once"]]}
   :cljsbuild {:builds [{:id "test"
                         :source-paths ["src" "test"]
                         :compiler {:output-to "resources/public/js/testable.js"
