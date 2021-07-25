@@ -12,7 +12,7 @@ jobs:
         - restore_cache:
             key: chickn-{{ checksum "project.clj" }}
         - run: lein deps
-        - run: npm install -g karma karma-cljs-test karma-chrome-launcher karma-firefox-launcher
+        - run: sudo npm install -g karma karma-cljs-test karma-chrome-launcher karma-firefox-launcher
         - save_cache:
             paths:
               - ~/.m2
