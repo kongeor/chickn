@@ -5,11 +5,11 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.238"]]
-  :plugins [[lein-cljsbuild "1.1.7"]
-            [lein-doo "0.1.10"]]
+  :plugins [[lein-cljsbuild "1.1.8"]
+            [lein-doo "0.1.11"]]
   :profiles {:dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
-  :aliases {"testjs"  ["doo" "phantom" "test" "once"]
-            "testall" ["do" "clean" ["test"] ["doo" "phantom" "test" "once"]]}
+  :aliases {"testjs"  ["doo" "chrome" "test" "once"]
+            "testall" ["do" "clean" ["test"] ["doo" "chrome" "test" "once"]]}
   :cljsbuild {:builds [{:id "test"
                         :source-paths ["src" "test"]
                         :compiler {:output-to "resources/public/js/testable.js"
