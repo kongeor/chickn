@@ -12,9 +12,9 @@ jobs:
     - name: Install karma
       run: npm install -g karma karma-cljs-test karma-chrome-launcher karma-firefox-launcher
     - name: Run clj tests
-      run: clj -Mtest
+      run: clojure -Mtest
     - name: Run chrome cljs tests
-      run:  clj -Mcljs-test -x chrome-headless
+      run:  clojure -Mcljs-test -x chrome-headless
     - name: Run firefox cljs tests
-      run:  clj -Mcljs-test -x firefox-headless
+      run:  clojure -Mcljs-test -x firefox-headless
 
