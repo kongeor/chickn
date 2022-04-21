@@ -1,7 +1,10 @@
 (ns chickn.math)
 
-(defn rnd-index [coll]
-  (int (* (rand) (count coll))))                            ;; FIXME make rand configurable
+(defn rnd-index
+  ([coll]
+   (rnd-index rand coll))
+  ([rand-f coll]
+   (int (* (rand-f) (count coll)))))
 
 (defn rand-between [min max]
   (+ (* (rand) (- max min)) min))

@@ -1,9 +1,10 @@
 (ns chickn.selectors-test
   (:require [clojure.test :refer [deftest testing is]]
             [chickn.selectors :refer [->selector]]
+            [chickn.core]
             [chickn.util :as util]))
 
-(deftest routette-test
+(deftest roulette-test
   (testing "roulette fairness"
     (let [pop [{:genes [0 1 2 3] :fitness 4}
                    {:genes [4 5 2 3] :fitness 3}
@@ -50,3 +51,24 @@
         (let [random-func (constantly 0.42)]
           (is (= [{:genes [12 13 2 3] :fitness 1}]
                  ((make-roulette random-func) cfg pop 1))))))))
+
+(deftest tournament-test
+  (let [pop         [{:genes [0 1 2 3] :fitness 4}
+                     {:genes [4 5 2 3] :fitness 3}
+                     {:genes [8 9 2 3] :fitness 2}
+                     {:genes [12 13 2 3] :fitness 1}]
+        random-func (util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75)
+        selector    (->selector #:chickn.selectors{:type        :chickn.selectors/tournament
+                                                   :random-func random-func
+                                                   :tour-size   3})]
+    (testing "tournament higher"
+      (let [cfg {:chickn.core/comparator chickn.core/higher-is-better}]
+        (is (= [{:genes [0 1 2 3] :fitness 4}
+                {:genes [4 5 2 3] :fitness 3}]
+              (selector cfg pop 2)))))
+    (testing "tournament lower"
+      (let [cfg {:chickn.core/comparator chickn.core/lower-is-better}]
+        (is (= [{:genes [8 9 2 3] :fitness 2}
+                {:genes [12 13 2 3] :fitness 1}]
+              (selector cfg pop 2)))))))
+

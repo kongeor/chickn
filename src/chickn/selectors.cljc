@@ -1,5 +1,6 @@
 (ns chickn.selectors
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.spec.alpha :as s]
+            [chickn.math :refer [rnd-index]]))
 
 ; -------
 ; Spec
@@ -15,6 +16,9 @@
 
 (defmethod selector-type ::best [_]
   (s/keys :req [::type ::rate]))
+
+(defmethod selector-type ::tournament [_]
+  (s/keys :req [::type ::random-func ::tour-size ::rate]))
 
 (s/def ::selector (s/multi-spec selector-type ::type))
 
@@ -41,6 +45,14 @@
               (nth pop i)
               (recur w (inc i))))))))
 
+(defn -tour
+  [{:keys [chickn.core/comparator]} {:keys [::random-func ::tour-size]} pop]
+  (let [f #(rnd-index random-func pop)
+        idxs (repeatedly tour-size f)
+        selected (map #(pop %) idxs)
+        pop' (sort-by :fitness comparator selected)]
+    (first pop')))
+
 (defn roulette
   [selector-cfg]
   (fn [cfg chromos n]
@@ -52,6 +64,11 @@
   (fn [_ chromos n]
     (take n chromos)))
 
+(defn tournament [selector-cfg]
+  (fn [cfg chromos n]
+    (let [tour-f (partial -tour cfg selector-cfg chromos)]
+      (repeatedly n tour-f))))
+
 ;; constructor funcs
 
 (defmulti ->selector ::type)
@@ -62,13 +79,24 @@
 (defmethod ->selector ::best [cfg]
   (best cfg))
 
+(defmethod ->selector ::tournament [cfg]
+  (tournament cfg))
 
 (comment
   (let [pop [{:genes [0 1 2 3] :fitness 1}
              {:genes [4 5 2 3] :fitness 2}
              {:genes [8 9 2 3] :fitness 4}
              {:genes [12 13 2 3] :fitness 8}]
-        pop {:pop pop :total-fitness 15}
+        ; pop {:pop pop :total-fitness 15}
         random-func rand #_(constantly 0.5)]
     (with-redefs [shuffle identity]
-      ((->selector {::type ::roulette ::random-func random-func}) pop {:chickn.core/pop-size 4}))))
+      ((->selector {::type ::roulette ::random-func random-func}) {:chickn.core/comparator chickn.core/higher-is-better} pop 2))))
+
+(comment
+  (let [pop [{:genes [0 1 2 3] :fitness 1}
+             {:genes [4 5 2 3] :fitness 2}
+             {:genes [8 9 2 3] :fitness 4}
+             {:genes [12 13 2 3] :fitness 8}]
+        random-func (chickn.util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75)]
+    (with-redefs [shuffle identity]
+      ((->selector {::type ::tournament ::random-func random-func ::tour-size 3}) {:chickn.core/comparator chickn.core/lower-is-better} pop 2))))

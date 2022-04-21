@@ -3,7 +3,7 @@
 (defn noop [& args])
 
 (defn val-cycle
-  "Retuns a func that upon each invocation
+  "Returns a func that upon each invocation
   returns each passed element.
 
   Used for dev and testing."
@@ -19,7 +19,7 @@
   #?(:clj (System/currentTimeMillis)
      :cljs (.getTime (js/Date.))))
 
-(defn fancy-printer []
+(defn fancy-printer []                                      ;; TODO fix
   (let [ind-tokens [\| \\ \- \/]
         sz (dec (count ind-tokens))
         i (atom 0)

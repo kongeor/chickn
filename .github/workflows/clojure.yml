@@ -9,9 +9,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Install dependencies
-      run: lein deps
     - name: Install karma
       run: npm install -g karma karma-cljs-test karma-chrome-launcher karma-firefox-launcher
-    - name: Run tests
-      run: lein testall
+    - name: Run clj tests
+      run: clj -Mtest
+    - name: Run chrome cljs tests
+      run:  clj -Mcljs-test -x chrome-headless
+    - name: Run firefox cljs tests
+      run:  clj -Mcljs-test -x firefox-headless
+
