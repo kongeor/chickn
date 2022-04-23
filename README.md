@@ -1,22 +1,29 @@
 # chickn
 
-[![CircleCI](https://circleci.com/gh/kongeor/chickn.svg?style=svg)](https://circleci.com/gh/kongeor/chickn)
+![clojure.yml](https://github.com/kongeor/chickn/actions/workflows/clojure.yml/badge.svg)
 
 clojure(script) genetic algorithms toolkit
 
 
+## Install
+
+Add the following dependency to your `project.clj`:
+
+```
+[com.github.kongeor/chickn "0.1.87"]
+```
+
+or: 
+
+```
+com.github.kongeor/chickn {:mvn/version "0.1.87"}
+```
+
+if you are using `deps.edn`
+
 ## Usage
 
-Chickn is a work in progress and things are subject to change. This is the reason why
-there is no current stable released version.
-
-You can test the current snapshot version by adding the following dependency to
-your `project.clj`:
-
-```
-[chickn "0.1.0-SNAPSHOT"]
-```
-
+TODO
 
 ## Examples
 
@@ -28,7 +35,7 @@ Traveling Salesman Problem.
 
 ## License
 
-Copyright © 2018 Kostas Georgiadis
+Copyright © 2018-2022 Kostas Georgiadis
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
