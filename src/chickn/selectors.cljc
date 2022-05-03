@@ -49,7 +49,7 @@
   [{:keys [chickn.core/comparator]} {:keys [::random-func ::tour-size]} pop]
   (let [f #(rnd-index random-func pop)
         idxs (repeatedly tour-size f)
-        selected (map #(pop %) idxs)
+        selected (map #(nth pop %) idxs)
         pop' (sort-by :fitness comparator selected)]
     (first pop')))
 

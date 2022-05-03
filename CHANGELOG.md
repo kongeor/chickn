@@ -2,10 +2,14 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
-### Changed
-- 
+### Added
+- N-Queens example
+### Fixed
+- Tournament selector nth item
+### Removed
+- `project.clj`
 
-## [0.1.87] - 2020-04-23
+## [0.1.87] - 2022-04-23
 ### Changed
 - (Almost) initial release
 
