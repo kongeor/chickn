@@ -4,8 +4,10 @@ All notable changes to this project will be documented in this file. This change
 ## [Unreleased]
 ### Added
 - N-Queens example
+- Support for parallel fitness evaluation
 ### Fixed
 - Tournament selector nth item
+- Track evaluation time
 ### Removed
 - `project.clj`
 
@@ -13,5 +15,5 @@ All notable changes to this project will be documented in this file. This change
 ### Changed
 - (Almost) initial release
 
-[Unreleased]: https://github.com/your-name/chickn/compare/0.1.87...HEAD
-[0.1.1]: https://github.com/your-name/chickn/compare/0.1.0...0.1.1
+[Unreleased]: https://github.com/kongeor/chickn/compare/0.1.87...HEAD
+[0.1.1]: https://github.com/kongeor/chickn/compare/0.1.0...0.1.1

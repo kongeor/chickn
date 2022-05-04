@@ -28,6 +28,6 @@
     (fn [pop]
       (print (inc-tk) "Iter: " 0 "Fitness:" (:best-fitness pop) "Best:" (:best-chromo pop)))))
 
-(defn simple-printer [{:keys [iteration best-fitness best-chromo]}]
-  (println "Iter:" iteration "Fitness:" best-fitness "Best:" best-chromo))
+(defn simple-printer [{:keys [iteration best-fitness time best-chromo]}]
+  (println "Iter:" iteration "Fitness:" best-fitness (str "Time: " time "ms") "Best:" best-chromo))
 

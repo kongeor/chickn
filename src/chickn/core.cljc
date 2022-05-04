@@ -6,19 +6,22 @@
             [chickn.util :as util]
             [chickn.math :as math]))
 
-(defn eval-pop [{fitness ::fitness comparator ::comparator monitor ::monitor} pop]
+(defn eval-pop [{fitness ::fitness comparator ::comparator monitor ::monitor parallel ::parallel} pop]
   (monitor :chickn.event/evaluating-genotype "Evaluating genotype" {:genotype pop})
-  (let [iteration ((fnil inc 0) (:iteration pop))
-        pop (vec (map (fn [{:keys [genes age]}]
-                        {:fitness (fitness genes)
-                         :genes genes
-                         :age ((fnil inc 0) age)}) (:pop pop)))
+  (let [start-time (util/now-millis)
+        iteration ((fnil inc 0) (:iteration pop))
+        pop (vec ((if parallel pmap map)
+                  (fn [{:keys [genes age]}]
+                    {:fitness (fitness genes)
+                     :genes   genes
+                     :age     ((fnil inc 0) age)}) (:pop pop)))
         pop (sort-by :fitness comparator pop)
         pop-avg (math/mean (map :fitness pop))
         std-dev (math/std-dev (map :fitness pop))
         age-avg (math/mean (map :age pop))
         best-fitness (:fitness (first pop))
-        best-chromo (:genes (first pop))]
+        best-chromo (:genes (first pop))
+        time (- (util/now-millis) start-time)]
     {:pop-avg (float pop-avg)
      :age-avg (float age-avg)
      :std-dev std-dev
@@ -26,7 +29,8 @@
      :best-chromo best-chromo
      :total-fitness (reduce + (map :fitness pop))
      :pop pop
-     :iteration iteration}))
+     :iteration iteration
+     :time time}))
 
 (defn genes->chromo [genes]
   {:genes (vec genes)
@@ -71,13 +75,14 @@
 (s/def ::fitness ifn?)
 (s/def ::comparator ifn?)
 (s/def ::reporter ifn?)
+(s/def ::parallel boolean?)
 
 (s/def ::selectors (s/+ :chickn.selectors/selector))
 (s/def ::operators (s/+ :chickn.operators/operator))
 
 (s/def ::config (s/keys :req [::chromo-gen ::pop-size ::terminated? ::monitor
                               ::fitness ::comparator ::reporter ::selectors
-                              ::operators]))
+                              ::operators ::parallel]))
 
 
 ;; FIXME implement
@@ -149,17 +154,15 @@
           new-genotype (eval-pop cfg (assoc genotype :pop adjusted-chromos))]
       [cfg new-genotype]))
   ([{:keys [::terminated? ::reporter] :as cfg} genotype n]
-   (let [start-time (util/now-millis)
-         end-time-f #(- (util/now-millis) start-time)]
-     (loop [cfg cfg
-            genotype genotype]
-       (let [best (:best-chromo genotype)]
-         (reporter genotype)
-         (cond
-           (terminated? best) {:solved? true :iteration (:iteration genotype) :time (end-time-f) :best best :genotype genotype}
-           (>= (:iteration genotype) n) {:solved? false :iteration (:iteration genotype) :time (end-time-f) :genotype genotype}
-           :else (let [[cfg' genotype'] (evolve cfg genotype)]
-                   (recur cfg' genotype'))))))))
+   (loop [cfg      cfg
+          genotype genotype]
+     (let [best (:best-chromo genotype)]
+       (reporter genotype)
+       (cond
+         (terminated? best) {:solved? true :iteration (:iteration genotype) :best best :genotype genotype}
+         (>= (:iteration genotype) n) {:solved? false :iteration (:iteration genotype) :genotype genotype}
+         :else (let [[cfg' genotype'] (evolve cfg genotype)]
+                 (recur cfg' genotype')))))))
 
 (defn init-and-evolve [cfg n]
   (let [genotype (init cfg)]
