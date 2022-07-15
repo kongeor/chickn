@@ -64,10 +64,21 @@
   (fn [_ chromos n]
     (take n chromos)))
 
+(defn- identical-diff [xs ys]
+  (remove (fn [e]
+            (seq (filter #(identical? % e) ys))) xs))
+
+(comment
+  (let [xs [{:a 1} {:a 2} {:a 3}]]
+    (identical-diff xs (take 2 xs))))
+
 (defn tournament [selector-cfg]
   (fn [cfg chromos n]
     (let [tour-f (partial -tour cfg selector-cfg chromos)]
-      (repeatedly n tour-f))))
+      (let [parents (repeatedly n tour-f)
+            leftover (identical-diff chromos parents)]
+        {:parents parents
+         :leftover leftover}))))
 
 ;; constructor funcs
 

@@ -63,12 +63,16 @@
                                                    :tour-size   3})]
     (testing "tournament higher"
       (let [cfg {:chickn.core/comparator chickn.core/higher-is-better}]
-        (is (= [{:genes [0 1 2 3] :fitness 4}
-                {:genes [4 5 2 3] :fitness 3}]
-              (selector cfg pop 2)))))
+        (is (= {:parents [{:genes [0 1 2 3] :fitness 4}
+                          {:genes [4 5 2 3] :fitness 3}]
+                :leftover [{:genes [8 9 2 3] :fitness 2}
+                           {:genes [12 13 2 3] :fitness 1}]}
+               (selector cfg pop 2)))))
     (testing "tournament lower"
       (let [cfg {:chickn.core/comparator chickn.core/lower-is-better}]
-        (is (= [{:genes [8 9 2 3] :fitness 2}
-                {:genes [12 13 2 3] :fitness 1}]
-              (selector cfg pop 2)))))))
+        (is (= {:parents [{:genes [8 9 2 3] :fitness 2}
+                          {:genes [12 13 2 3] :fitness 1}]
+                :leftover [{:genes [0 1 2 3] :fitness 4}
+                           {:genes [4 5 2 3] :fitness 3}]}
+               (selector cfg pop 2)))))))
 
