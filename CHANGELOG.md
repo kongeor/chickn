@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Added
+- Reinsertion
+### Modified
+- Simplified evolution process
+- Process supports for one selector, one or none crossover and one or none mutation
 
 ## [0.1.90] - 2022-05-04
 ### Added

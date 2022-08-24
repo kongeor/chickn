@@ -22,6 +22,12 @@
 
 (s/def ::selector (s/multi-spec selector-type ::type))
 
+;; -----
+;; util
+
+(defn- identical-diff [xs ys]
+  (remove (fn [e]
+            (seq (filter #(identical? % e) ys))) xs))
 
 ; -------
 ; Natural Selectors
@@ -54,31 +60,32 @@
     (first pop')))
 
 (defn roulette
-  [selector-cfg]
-  (fn [cfg chromos n]
-    (let [roulette-f (partial -roulette cfg selector-cfg chromos)]
-      (repeatedly n roulette-f))))
+  [{:keys [:chickn.selectors/rate] :as selector-cfg}]
+  (fn [{:keys [:chickn.core/pop-size] :as cfg} chromos]
+    (let [n        (int (* pop-size rate))
+          roulette-f (partial -roulette cfg selector-cfg chromos)
+          parents (repeatedly n roulette-f)
+          leftover (identical-diff chromos parents)]
+      {:parents  parents
+       :leftover leftover})))
 
 (defn best
   [_]
   (fn [_ chromos n]
     (take n chromos)))
 
-(defn- identical-diff [xs ys]
-  (remove (fn [e]
-            (seq (filter #(identical? % e) ys))) xs))
-
 (comment
   (let [xs [{:a 1} {:a 2} {:a 3}]]
     (identical-diff xs (take 2 xs))))
 
-(defn tournament [selector-cfg]
-  (fn [cfg chromos n]
-    (let [tour-f (partial -tour cfg selector-cfg chromos)]
-      (let [parents (repeatedly n tour-f)
-            leftover (identical-diff chromos parents)]
-        {:parents parents
-         :leftover leftover}))))
+(defn tournament [{:keys [:chickn.selectors/rate] :as selector-cfg}]
+  (fn [{:keys [:chickn.core/pop-size] :as cfg} chromos]
+    (let [n        (int (* pop-size rate))
+          tour-f   (partial -tour cfg selector-cfg chromos)
+          parents  (repeatedly n tour-f)
+          leftover (identical-diff chromos parents)]
+      {:parents  parents
+       :leftover leftover})))
 
 ;; constructor funcs
 

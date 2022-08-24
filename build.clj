@@ -11,7 +11,8 @@
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
 
 (defn clean [_]
-  (b/delete {:path "target"}))
+  (b/delete {:path "target"})
+  (b/delete {:path "cljs-test-runner-out"}))
 
 (defn jar [_]
   (b/write-pom {:class-dir class-dir

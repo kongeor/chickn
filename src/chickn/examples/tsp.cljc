@@ -42,28 +42,27 @@
 
 
 (comment
-  (let [cfg #:chickn.core{:chromo-gen #(shuffle cities)
-                          :pop-size     30
+  (let [cfg #:chickn.core{:chromo-gen  #(shuffle cities)
+                          :pop-size    30
                           :terminated? noop
                           ;:monitor     monitor
                           :monitor     noop
-                          :fitness      fitness
-                          :comparator   chickn/lower-is-better
-                          :reporter     simple-printer
-                          :selectors  [#:chickn.selectors{:type        :chickn.selectors/best
+                          :fitness     fitness
+                          :comparator  chickn/lower-is-better
+                          :reporter    simple-printer
+                          :selector    #:chickn.selectors{:type        :chickn.selectors/roulette
                                                           :elit        true
-                                                          :rate        0.1
-                                                          :random-func rand}
-                                       #:chickn.selectors{:type        :chickn.selectors/roulette
                                                           :rate        0.3
-                                                          :random-func rand}]
-                          :operators    [#:chickn.operators{:type         :chickn.operators/ordered-crossover
-                                                            :rate         0.3
-                                                            :random-point rnd-index
-                                                            :rand-nth     rand-nth}
-                                         #:chickn.operators{:type        :chickn.operators/swap-mutation
-                                                            :rate        0.01
-                                                            :rand-nth    rnd-index
-                                                            :random-func rand}]}
+                                                          :random-func rand}
+                          :crossover   #:chickn.operators{:type         :chickn.operators/ordered-crossover
+                                                          :rate         0.3
+                                                          :random-point rnd-index
+                                                          :rand-nth     rand-nth}
+                          :mutation    #:chickn.operators{:type        :chickn.operators/swap-mutation
+                                                          :rate        0.01
+                                                          :rand-nth    rnd-index
+                                                          :random-func rand}
+                          :reinsertion #:chickn.reinsertion{:type :chickn.reinsertion/elitist
+                                                            :rate 0.1}}
         genotype (chickn/init cfg)]
     (select-keys (chickn/evolve cfg genotype 100) [:iteration :time :best-chromo])))

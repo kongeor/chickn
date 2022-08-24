@@ -81,30 +81,32 @@
 
 (defmulti ->operator ::type)
 
-(defmethod ->operator ::cut-crossover [{:keys [::rand-nth] :as cfg}]
+(defmethod ->operator ::cut-crossover [{:keys [::rand-nth ::rate] :as cfg}]
   (let [cross (cut-crossover cfg)]
-    (fn [_ pop n]
-      (->>
-        (let [pairs (/ (if (= (mod n 2) 0) n (inc n)) 2)]
-          (take
-            pairs
-            (repeatedly
-              #(cross (rand-nth pop) (rand-nth pop)))))
-        (apply concat)
-        (take n)
-        (into [])))))
+    (fn [{:keys [:chickn.core/pop-size] :as cfg} pop]
+      (let [n (int (* pop-size rate))]
+        (->>
+          (let [pairs (/ (if (= (mod n 2) 0) n (inc n)) 2)]
+            (take
+              pairs
+              (repeatedly
+                #(cross (rand-nth pop) (rand-nth pop)))))
+          (apply concat)
+          (take n)
+          (into []))))))
 
-(defmethod ->operator ::ordered-crossover [{:keys [::rand-nth] :as cfg}]
+(defmethod ->operator ::ordered-crossover [{:keys [::rand-nth ::rate] :as cfg}]
   (let [cross (ordered-crossover cfg)]
-    (fn [_ chromos n]
-      (->>
-        (repeatedly
-          #(cross (rand-nth chromos) (rand-nth chromos)))
-        (take n)
-        (into [])))))
+    (fn [{:keys [:chickn.core/pop-size] :as cfg} chromos]
+      (let [n (int (* pop-size rate))]
+        (->>
+          (repeatedly
+            #(cross (rand-nth chromos) (rand-nth chromos)))
+          (take n)
+          (into []))))))
 
 (defmethod ->operator ::rand-mutation [{:keys [::random-func ::rate ::mutation-func]}]
-  (fn [_ pop n]                                               ;; FIXME, what to do with n? FIXME add test
+  (fn [_ pop]
     (map
       (fn [c]
         (assoc-in c [:genes]
@@ -113,7 +115,7 @@
                    %) (:genes c)))) pop)))
 
 (defmethod ->operator ::swap-mutation [{:keys [::rand-nth ::rate ::random-func]}]
-  (fn [_ pop _]                                             ;; Notice n is ignored
+  (fn [_ pop]
     (mapv
       (fn [c]
         (if (> rate (random-func))

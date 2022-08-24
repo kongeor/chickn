@@ -34,7 +34,7 @@
       (let [genotype (chickn.core/raw-pop->pop (partition 4 (range 16))) ;; FIXME
             chromos (:pop genotype)
             rnd-chromos (val-cycle (first chromos) (second chromos) (nth chromos 2) (nth chromos 3))
-            cfg {}
+            cfg {:chickn.core/pop-size 4}
             rf (constantly 0)]
         (is (= [{:genes [0 1 6 7] :fitness 0 :age 0}
                 {:genes [4 5 2 3] :fitness 0 :age 0}
@@ -45,7 +45,7 @@
                                                :pointcuts    1
                                                :rand-nth rnd-chromos
                                                :random-point (fn [& _] 2)
-                                               :random-func  rf}) cfg pop 4)))))))
+                                               :random-func  rf}) cfg pop)))))))
 
 (deftest ordered-crossover-pop-test
   (testing "ordered crossover wiring"
@@ -59,7 +59,7 @@
                                    (nth chromos 2) (nth chromos 3)
                                    (second chromos) (first chromos)
                                    (nth chromos 3) (nth chromos 2))
-            cfg {}
+            cfg {:chickn.core/pop-size 4}
             rf (val-cycle 2 4 1 3)]
         (is (= [{:genes [6 1 3 4 2 5] :fitness 0 :age 0}
                 {:genes [4 1 5 6 3 2] :fitness 0 :age 0}
@@ -69,7 +69,7 @@
                                                :rate         1.0
                                                :pointcuts    1
                                                :random-point rf
-                                               :rand-nth rnd-chromos}) cfg pop 4)))))))
+                                               :rand-nth rnd-chromos}) cfg pop)))))))
 
 (deftest swap-mutate-pop-test
   (testing "swap mutate pop wiring"
@@ -86,4 +86,4 @@
                ((->operator #:chickn.operators{:type         :chickn.operators/swap-mutation
                                                :rate         0.3
                                                :rand-nth rnd-genes
-                                               :random-func  rf}) cfg chromos -1)))))))
+                                               :random-func  rf}) cfg chromos)))))))

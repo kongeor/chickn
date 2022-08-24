@@ -27,23 +27,21 @@
                 :fitness      fitness
                 :comparator   chickn/lower-is-better
                 :reporter     util/simple-printer
-                :selectors    [#:chickn.selectors{:type        :chickn.selectors/best
-                                                  :elit        true
-                                                  :rate        0.1
-                                                  :random-func rand}
-                               #:chickn.selectors{:type        :chickn.selectors/roulette
-                                                  :rate        0.3
-                                                  :random-func rand}]
-                :operators    [#:chickn.operators{:type         :chickn.operators/cut-crossover
-                                                  :rate         0.3
-                                                  :pointcuts    1
-                                                  :random-point math/rnd-index
-                                                  :random-func  rand
-                                                  :rand-nth rand-nth}
-                               #:chickn.operators{:type        :chickn.operators/rand-mutation
-                                                  :rate        0.1
-                                                  :random-func rand
-                                                  :mutation-func rast-rnd}]})
+                :selector     #:chickn.selectors{:type        :chickn.selectors/roulette
+                                                 :rate        0.3
+                                                 :random-func rand}
+                :crossover    #:chickn.operators{:type         :chickn.operators/cut-crossover
+                                                 :rate         0.3
+                                                 :pointcuts    1
+                                                 :random-point math/rnd-index
+                                                 :random-func  rand
+                                                 :rand-nth     rand-nth}
+                :mutation    #:chickn.operators{:type          :chickn.operators/rand-mutation
+                                                 :rate          0.1
+                                                 :random-func   rand
+                                                 :mutation-func rast-rnd}
+                :reinsertion #:chickn.reinsertion{:type :chickn.reinsertion/elitist
+                                                  :rate 0.1}})
 
 #_(clojure.spec.alpha/explain :chickn.core/config rast-cfg)
 

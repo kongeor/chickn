@@ -55,28 +55,26 @@
 
 (defn queens [n]
   (let [cfg #:chickn.core{:chromo-gen  #(shuffle (range n))
-                          :pop-size    30
+                          :pop-size    20
                           :terminated? #(= (fitness %) 0)   ;; TODO need a better way , plus duplicated iteration
                           :monitor     util/noop
                           :fitness     fitness
                           :comparator  chickn/lower-is-better
                           :reporter    printer
-                          :selectors   [#:chickn.selectors{:type        :chickn.selectors/best
-                                                           :elit        false
-                                                           :rate        0.1
-                                                           :random-func rand} ;; TODO make optional
-                                        #:chickn.selectors{:type        :chickn.selectors/tournament
-                                                           :rate        0.3
-                                                           :random-func rand
-                                                           :tour-size   10}]
-                          :operators   [#:chickn.operators{:type         :chickn.operators/ordered-crossover
-                                                           :rate         0.5
-                                                           :random-point math/rnd-index
-                                                           :rand-nth     rand-nth}
-                                        #:chickn.operators{:type        :chickn.operators/swap-mutation
-                                                           :rate        0.7
-                                                           :rand-nth    math/rnd-index
-                                                           :random-func rand}]}
+                          :selector   #:chickn.selectors{:type        :chickn.selectors/tournament
+                                                          :rate        0.3
+                                                          :random-func rand
+                                                          :tour-size   10}
+                          :crossover   #:chickn.operators{:type         :chickn.operators/ordered-crossover
+                                                          :rate         0.5
+                                                          :random-point math/rnd-index
+                                                          :rand-nth     rand-nth}
+                          :mutation    #:chickn.operators{:type        :chickn.operators/swap-mutation
+                                                          :rate        0.7
+                                                          :rand-nth    math/rnd-index
+                                                          :random-func rand}
+                          :reinsertion #:chickn.reinsertion{:type :chickn.reinsertion/elitist
+                                                            :rate 0.1}}
         genotype (chickn/init cfg)
         result (chickn/evolve cfg genotype 2000)]
     (if (:solved? result)

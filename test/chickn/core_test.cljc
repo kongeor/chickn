@@ -25,7 +25,7 @@
                   {:genes [0 1 0 0]
                    :fitness 1
                    :age 1}]}
-           (eval-pop cfg pop)))))
+           (dissoc (eval-pop cfg pop) :time)))))
 
 #_(deftest crossover-test
   (testing "one pointcut"
