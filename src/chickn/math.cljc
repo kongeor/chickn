@@ -26,6 +26,7 @@
            (- total 1))
         (Math/sqrt))))
 
+;; TODO reference
 (defn cartesian-product
   "All the ways to take one item from each sequence"
   [& seqs]
