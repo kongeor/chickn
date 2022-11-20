@@ -1,6 +1,6 @@
 (ns chickn.mutation-test
   (:require [chickn.chromosome :refer [genes->chromo]]
-            [chickn.mutation :refer :all]
+            [chickn.mutation :refer [swap-mutate ->mutation]]
             [chickn.util :refer [val-cycle]]
             [clojure.test :refer [deftest is testing]]))
 
