@@ -36,7 +36,7 @@
     (for [cfg' cfgs]
       (let [res (repeatedly n #(init-and-evolve cfg' iters))
             time (float (mean (map :time res)))
-            fitness (float (mean (map #(get-in % [:genotype :best-fitness]) res)))]
+            fitness (float (mean (map #(get-in % [:pop :best-fitness]) res)))]
         (assoc cfg' :time time :fitness fitness)))))
 
 (defn get-override-cols [overrides names]

@@ -1,6 +1,6 @@
-(ns chickn.operators
+(ns chickn.crossover
   (:require [clojure.spec.alpha :as s]
-            [chickn.selectors :refer [->selector]]))
+            [chickn.chromosome :as c]))
 
 ; -----
 ; Spec
@@ -14,35 +14,24 @@
 (s/def ::random-func ifn?)                                  ;; duplicate with selectors?
 (s/def ::mutation-func ifn?)
 
-(defmulti operator-type ::type)
+(defmulti crossover-type ::type)
 
-(defmethod operator-type ::ordered-crossover [_]
+(defmethod  crossover-type ::ordered-crossover [_]
   (s/keys :req [::type ::rate ::random-point ::rand-nth]))
 
-(defmethod operator-type ::cut-crossover [_]
-  (s/keys :req [::type ::rate ::pointcuts ::random-point ::rand-nth]))
+(defmethod crossover-type ::cut-crossover [_]
+  (s/keys :req [::type ::rate ::pointcuts ::rand-nth]))
 
-(defmethod operator-type ::rand-mutation [_]
-  (s/keys :req [::type ::rate ::random-func ::mutation-func]))
-
-(s/def ::operator (s/multi-spec operator-type ::type))
+(s/def ::crossover (s/multi-spec crossover-type ::type))
 
 ; -----
-; Util
-
-(defn genes->chromo [genes]
-  {:genes genes
-   :fitness 0                                               ; FIXME
-   :age 0})
-
-; -----
-; Genetic Operators
+; Impl
 
 (defn cut-crossover [{:keys [::random-point]}]
   (fn [{g1 :genes} {g2 :genes}]
     (let [i  (random-point g1)
-          o1 (->> (concat (take i g1) (drop i g2)) (into []) genes->chromo)
-          o2 (->> (concat (take i g2) (drop i g1)) (into []) genes->chromo)]
+          o1 (->> (concat (take i g1) (drop i g2)) (into []) c/genes->chromo)
+          o2 (->> (concat (take i g2) (drop i g1)) (into []) c/genes->chromo)]
       [o1 o2])))
 
 ;; order-crossover
@@ -67,21 +56,15 @@
               (if (some (set (concat c cut)) (take 1 g))
                 (recur c i (rest g))
                 (recur (conj c (first g)) (inc i) (rest g))))))
-        genes->chromo))))
+        c/genes->chromo))))
 
-(defn swap-mutate [random-func chromo]
-  (let [genes (:genes chromo)]
-    (let [[p1 p2] (repeatedly 2 #(random-func genes))
-          v1 (get genes p1)
-          v2 (get genes p2)]
-      (genes->chromo (assoc (assoc genes p1 v2) p2 v1)))))
 
 ; ----
 ; constructor funcs
 
-(defmulti ->operator ::type)
+(defmulti ->crossover ::type)
 
-(defmethod ->operator ::cut-crossover [{:keys [::rand-nth ::rate] :as cfg}]
+(defmethod ->crossover ::cut-crossover [{:keys [::rand-nth ::rate] :as cfg}]
   (let [cross (cut-crossover cfg)]
     (fn [{:keys [:chickn.core/pop-size] :as cfg} pop]
       (let [n (int (* pop-size rate))]
@@ -95,7 +78,7 @@
           (take n)
           (into []))))))
 
-(defmethod ->operator ::ordered-crossover [{:keys [::rand-nth ::rate] :as cfg}]
+(defmethod ->crossover ::ordered-crossover [{:keys [::rand-nth ::rate] :as cfg}]
   (let [cross (ordered-crossover cfg)]
     (fn [{:keys [:chickn.core/pop-size] :as cfg} chromos]
       (let [n (int (* pop-size rate))]
@@ -105,30 +88,13 @@
           (take n)
           (into []))))))
 
-(defmethod ->operator ::rand-mutation [{:keys [::random-func ::rate ::mutation-func]}]
-  (fn [_ pop]
-    (map
-      (fn [c]
-        (assoc-in c [:genes]
-          (mapv #(if (> rate (random-func))
-                   (mutation-func)
-                   %) (:genes c)))) pop)))
-
-(defmethod ->operator ::swap-mutation [{:keys [::rand-nth ::rate ::random-func]}]
-  (fn [_ pop]
-    (mapv
-      (fn [c]
-        (if (> rate (random-func))
-          (swap-mutate rand-nth c)
-          c)) pop)))
-
 (comment
   (let [pop [{:genes [0 1 2 3] :fitness 1}
              {:genes [4 5 6 7] :fitness 1}
              {:genes [8 9 10 11] :fitness 1}
              {:genes [12 13 14 15] :fitness 1}]
         random-func (constantly 0.5)]
-    ((->operator {::type ::cut-crossover
+    ((->crossover {::type ::cut-crossover
                   ::rate 0.3
                   ::pointcuts 1
                   ::random-point rand-nth}) pop {:chickn.core/pop-size 10 :chickn.core/elitism-rate 0.56})))
@@ -139,7 +105,7 @@
              {:genes [8 9 10 11] :fitness 1}
              {:genes [12 13 14 15] :fitness 1}]
         random-func (constantly 0.2)]
-    ((->operator {::type ::rand-mutation
+    ((->crossover {::type ::rand-mutation
                   ::rate 0.3
                   ::random-func random-func
                   ::mutation-func (constantly -1)}) pop {})))
@@ -148,29 +114,16 @@
 ; Playground
 
 (comment
-  (let [pop (:pop (chickn.core/raw-pop->pop (partition 4 (range 16))))
-        sel-cfg #:chickn.selectors{:type :chickn.selectors/roulette
-                                                  :random-func rand}]
-    ((->selector sel-cfg) pop)
-    #_((operator {::type         ::cut-crossover
-                ::rate         1.0
-                ::elitism      0.0
-                ::pointcuts    1
-                ::random-point (fn [& _] 2)
-                ::random-func  rand
-                ::selector     sel-cfg}) pop)))
-
-(comment
   (let [pop (:pop (chickn.core/raw-pop->pop (partition 4 (range 16)))) ;; TODO make test
         mut-cfg {::type ::rand-mutation
                  ::rate 0.3
                  ::random-func rand
                  ::elitism 0
                  ::mutation-func (constantly -1)}]
-    ((operator mut-cfg) pop)))
+    ((crossover mut-cfg) pop)))
 
 (comment
-  (s/conform ::operator
+  (s/conform ::crossover
              {::type ::cut-crossover
               ::rate 0.3
               ::pointcuts 1

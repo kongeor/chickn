@@ -1,4 +1,4 @@
-(ns chickn.selectors
+(ns chickn.selector
   (:require [clojure.spec.alpha :as s]
             [chickn.math :refer [rnd-index]]))
 
@@ -20,9 +20,18 @@
   (s/keys :req [::type ::rate]))
 
 (defmethod selector-type ::tournament [_]
-  (s/keys :req [::type ::random-func ::tour-size ::rate ::duplicates? ::duplicate-checks]))
+  (s/keys :req [::type ::random-func ::tour-size ::rate]
+          :opt [::duplicates? ::duplicate-checks]))
 
 (s/def ::selector (s/multi-spec selector-type ::type))
+
+(comment
+  (s/valid? ::selector
+            #:chickn.selector{:type        :chickn.selector/tournament
+                              :rate        0.3
+                              :random-func rand
+                              :tour-size   5
+                              :duplicates? false}))
 
 ;; -----
 ;; util
@@ -62,7 +71,7 @@
     (first pop')))
 
 (defn roulette
-  [{:keys [:chickn.selectors/rate] :as selector-cfg}]
+  [{:keys [::rate] :as selector-cfg}]
   (fn [{:keys [:chickn.core/pop-size] :as cfg} chromos]
     (let [n        (int (* pop-size rate))
           roulette-f (partial -roulette cfg selector-cfg chromos)
@@ -142,3 +151,19 @@
         random-func (chickn.util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75 0.8)]
     ((->selector {::type ::tournament ::random-func random-func
                   ::tour-size 3 ::rate 0.75 ::duplicates? false}) {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4} pop)))
+
+;; --------
+;; Playground
+
+(comment
+  (let [pop (:pop (chickn.core/raw-pop->pop (partition 4 (range 16))))
+        sel-cfg #:chickn.selector{:type                        :chickn.selectors/roulette
+                                  :random-func rand}]
+    ((->selector sel-cfg) pop)
+    #_((operator {::type         ::cut-crossover
+                  ::rate         1.0
+                  ::elitism      0.0
+                  ::pointcuts    1
+                  ::random-point (fn [& _] 2)
+                  ::random-func  rand
+                  ::selector     sel-cfg}) pop)))

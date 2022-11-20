@@ -46,41 +46,40 @@
 (comment
   (print-board c2))
 
-
 (defn printer [{:keys [iteration best-fitness best-chromo]}]
-  (println "Iteration" iteration)
+  (println "Iteration" iteration "best fitness" best-fitness)
   (print-board best-chromo)
-  (println)
- )
+  (println))
 
 (defn queens [n]
   (let [cfg #:chickn.core{:chromo-gen  #(shuffle (range n))
                           :pop-size    20
-                          :terminated? #(= (fitness %) 0)   ;; TODO need a better way , plus duplicated iteration
-                          :monitor     util/noop
+                          :solved?     (fn [_ {:keys [best-chromo]}]
+                                         (= (fitness best-chromo) 0))
                           :fitness     fitness
                           :comparator  chickn/lower-is-better
-                          :reporter    printer
-                          :selector   #:chickn.selectors{:type        :chickn.selectors/tournament
-                                                          :rate        0.3
-                                                          :random-func rand
-                                                          :tour-size   10}
-                          :crossover   #:chickn.operators{:type         :chickn.operators/ordered-crossover
+                          ; :reporter    printer
+                          :monitor     util/noop
+                          :selector    #:chickn.selector{:type        :chickn.selector/tournament
+                                                         :rate        0.3
+                                                         :random-func rand
+                                                         :tour-size   5
+                                                         :duplicates? false}
+                          :crossover   #:chickn.crossover{:type         :chickn.crossover/ordered-crossover
                                                           :rate         0.5
                                                           :random-point math/rnd-index
                                                           :rand-nth     rand-nth}
-                          :mutation    #:chickn.operators{:type        :chickn.operators/swap-mutation
-                                                          :rate        0.7
-                                                          :rand-nth    math/rnd-index
-                                                          :random-func rand}
+                          :mutation    #:chickn.mutation{:type        :chickn.mutation/swap-mutation
+                                                         :rate        0.7
+                                                         :rand-nth    math/rnd-index
+                                                         :random-func rand}
                           :reinsertion #:chickn.reinsertion{:type :chickn.reinsertion/elitist
                                                             :rate 0.1}}
-        genotype (chickn/init cfg)
-        result (chickn/evolve cfg genotype 2000)]
+        result (chickn/init-and-evolve cfg 2000)]
     (if (:solved? result)
       (println "solved after" (:iteration result) "iterations")
       (println "not solved :("))
-    (print-board (-> result :genotype :best-chromo))))
+    (print-board (-> result :pop :best-chromo))))
 
 (comment
   (queens 4)

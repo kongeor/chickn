@@ -1,6 +1,6 @@
-(ns chickn.selectors-test
+(ns chickn.selector-test
   (:require [clojure.test :refer [deftest testing is]]
-            [chickn.selectors :refer [->selector]]
+            [chickn.selector :refer [->selector]]
             [chickn.core]
             [chickn.util :as util]))
 
@@ -12,9 +12,9 @@
                    {:genes [12 13 2 3] :fitness 1}]
           cfg {:chickn.core/comparator chickn.core/higher-is-better :chickn.core/pop-size 4}
           make-roulette (fn [random-func]
-                          (->selector #:chickn.selectors{:type :chickn.selectors/roulette
+                          (->selector #:chickn.selector{:type         :chickn.selector/roulette
                                                          :random-func random-func
-                                                         :rate 0.25}))]
+                                                         :rate        0.25}))]
       (with-redefs [shuffle identity]
         (let [random-func (constantly 0.16)]
           (is (= [{:genes [0 1 2 3] :fitness 4}]
@@ -35,9 +35,9 @@
                {:genes [0 1 2 3] :fitness 4}]
           cfg {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4}
           make-roulette (fn [random-func]
-                          (->selector #:chickn.selectors{:type :chickn.selectors/roulette
+                          (->selector #:chickn.selector{:type         :chickn.selector/roulette
                                                          :random-func random-func
-                                                         :rate 0.25}))]
+                                                         :rate        0.25}))]
       (with-redefs [shuffle identity]
         ;; inverse probability will give this a zero selection chance
         ;; FIXME
@@ -60,10 +60,10 @@
                      {:genes [8 9 2 3] :fitness 2}
                      {:genes [12 13 2 3] :fitness 1}]
         random-func (util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75)
-        selector    (->selector #:chickn.selectors{:type        :chickn.selectors/tournament
+        selector    (->selector #:chickn.selector{:type         :chickn.selector/tournament
                                                    :random-func random-func
                                                    :tour-size   3
-                                                   :rate 0.5})]
+                                                   :rate        0.5})]
     (testing "tournament higher"
       (let [cfg {:chickn.core/comparator chickn.core/higher-is-better :chickn.core/pop-size 4}]
         (is (= {:parents [{:genes [0 1 2 3] :fitness 4}
@@ -79,9 +79,9 @@
                            {:genes [4 5 2 3] :fitness 3}]}
                (selector cfg pop)))))
     (testing "allowing duplicates"
-      (let [selected ((->selector #:chickn.selectors{:type :chickn.selectors/tournament
+      (let [selected ((->selector #:chickn.selector{:type       :chickn.selector/tournament
                                                      :tour-size 3
-                                                     :rate 0.75})
+                                                     :rate      0.75})
                       {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4} pop)]
         (is (= 3 (-> selected :parents count)))))
     (testing "not allowing duplicates"
@@ -90,10 +90,10 @@
                  {:genes [8 9 2 3] :fitness 4}
                  {:genes [12 13 2 3] :fitness 8}]
             random-func (chickn.util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75 0.8)
-            selected ((->selector #:chickn.selectors{:type :chickn.selectors/tournament
-                                                     :tour-size 3
+            selected ((->selector #:chickn.selector{:type         :chickn.selector/tournament
+                                                     :tour-size   3
                                                      :random-func random-func
-                                                     :rate 0.75
+                                                     :rate        0.75
                                                      :duplicates? false})
                       {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4} pop)]
         (is (= 3 (-> selected :parents set count)))))))
@@ -104,21 +104,21 @@
              {:genes [8 9 2 3] :fitness 4}
              {:genes [12 13 2 3] :fitness 8}]
         random-func (chickn.util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75 0.8)
-        selector-cfg #:chickn.selectors{:type :chickn.selectors/tournament
-                                        :tour-size 3
+        selector-cfg #:chickn.selector{:type         :chickn.selector/tournament
+                                        :tour-size   3
                                         :random-func random-func
-                                        :rate 0.75}
+                                        :rate        0.75}
         cfg {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4}]
     (testing "default - allowing duplicates"
       (let [selected ((->selector selector-cfg)
                       cfg pop)]
         (is (= 2 (-> selected :parents set count)))))
     (testing "not allowing duplicates"
-      (let [selected ((->selector (assoc selector-cfg :chickn.selectors/duplicates? false))
+      (let [selected ((->selector (assoc selector-cfg :chickn.selector/duplicates? false))
                       cfg pop)]
         (is (= 3 (-> selected :parents set count)))))
     (testing "exceeding number of checks"
-      (let [selected ((->selector (assoc selector-cfg :chickn.selectors/duplicates? true
-                                                      :chickn.operators/random-func (chickn.util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75)))
+      (let [selected ((->selector (assoc selector-cfg :chickn.selector/duplicates? true
+                                                      :chickn.operator/random-func (chickn.util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75)))
                       cfg pop)]
         (is (= 2 (-> selected :parents set count)))))))

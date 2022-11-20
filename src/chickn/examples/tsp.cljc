@@ -1,6 +1,5 @@
 (ns chickn.examples.tsp
   (:require [chickn.core :as chickn]
-            [chickn.events :refer [monitor]]
             [chickn.util :refer [noop simple-printer]]
             [chickn.math :refer [rnd-index]]))
 
@@ -32,7 +31,7 @@
 (defn init-pop2 [n cities-cnt]
   (repeatedly n
               #(for [i (range cities-cnt)]
-                {:id (keyword (str "c" i)) :x (rand-int 100) :y (rand-int 100)})))
+                 {:id (keyword (str "c" i)) :x (rand-int 100) :y (rand-int 100)})))
 
 #_(println (init-pop 30))
 
@@ -44,25 +43,23 @@
 (comment
   (let [cfg #:chickn.core{:chromo-gen  #(shuffle cities)
                           :pop-size    30
-                          :terminated? noop
-                          ;:monitor     monitor
+                          :solved?     noop
                           :monitor     noop
                           :fitness     fitness
                           :comparator  chickn/lower-is-better
                           :reporter    simple-printer
-                          :selector    #:chickn.selectors{:type        :chickn.selectors/roulette
-                                                          :elit        true
-                                                          :rate        0.3
-                                                          :random-func rand}
-                          :crossover   #:chickn.operators{:type         :chickn.operators/ordered-crossover
+                          :selector    #:chickn.selector{:type        :chickn.selector/roulette
+                                                         :elit        true
+                                                         :rate        0.3
+                                                         :random-func rand}
+                          :crossover   #:chickn.crossover{:type         :chickn.crossover/ordered-crossover
                                                           :rate         0.3
                                                           :random-point rnd-index
                                                           :rand-nth     rand-nth}
-                          :mutation    #:chickn.operators{:type        :chickn.operators/swap-mutation
-                                                          :rate        0.01
-                                                          :rand-nth    rnd-index
-                                                          :random-func rand}
+                          :mutation    #:chickn.mutation{:type        :chickn.mutation/swap-mutation
+                                                         :rate        0.01
+                                                         :rand-nth    rnd-index
+                                                         :random-func rand}
                           :reinsertion #:chickn.reinsertion{:type :chickn.reinsertion/elitist
-                                                            :rate 0.1}}
-        genotype (chickn/init cfg)]
-    (select-keys (chickn/evolve cfg genotype 100) [:iteration :time :best-chromo])))
+                                                            :rate 0.1}}]
+    (select-keys (chickn/init-and-evolve cfg 100) [:iteration :time :best-chromo])))

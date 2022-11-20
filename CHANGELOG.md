@@ -1,25 +1,31 @@
-# Change Log
-All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
+# ChangeLog
+
+## [Scheduled]
+
+- Update README
+- Make tournament selector default
+- Fix roulette
+- Multiple pointcut support
+
 
 ## [Unreleased]
-### Added
+
 - Reinsertion
-### Modified
 - Simplified evolution process
 - Process supports for one selector, one or none crossover and one or none mutation
+- Fix all the things
+
 
 ## [0.1.90] - 2022-05-04
-### Added
+
 - N-Queens example
 - Support for parallel fitness evaluation
-### Fixed
-- Tournament selector nth item
-- Track evaluation time
-### Removed
-- `project.clj`
+- Fix Tournament selector nth item
+- Fix tracking evaluation time
+- Removed `project.clj`
+
 
 ## [0.1.87] - 2022-04-23
-### Changed
 - (Almost) initial release
 
 [Unreleased]: https://github.com/kongeor/chickn/compare/v0.1.90...HEAD
