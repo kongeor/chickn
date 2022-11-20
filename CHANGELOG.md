@@ -14,6 +14,7 @@
 - Simplified evolution process
 - Process supports for one selector, one or none crossover and one or none mutation
 - Fix all the things
+- Upgrade workflow deps
 
 
 ## [0.1.90] - 2022-05-04
