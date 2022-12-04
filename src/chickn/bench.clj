@@ -56,17 +56,17 @@
     (pp/print-table cols' res')))
 
 (def overrides
-  {[:chickn.core/reporter] [noop]
-   [:chickn.core/pop-size] [10 30 100]
+  {[:chickn.core/reporter]                           [noop]
+   [:chickn.core/population-size]                    [10 30 100]
    [:chickn.core/operators 0 :chickn.operators/rate] [0.1 0.5 0.9]
    [:chickn.core/operators 1 :chickn.operators/rate] [0.1 0.5 0.9]})
 
 (def names
-  {[:chickn.core/pop-size] "pop size"
+  {[:chickn.core/population-size]                    "pop size"
    [:chickn.core/operators 0 :chickn.operators/rate] "crossover rate"
    [:chickn.core/operators 1 :chickn.operators/rate] "mutation rate"
-   [:time] "time"
-   [:fitness] "fitness"})
+   [:time]                                           "time"
+   [:fitness]                                        "fitness"})
 
 #_(pp-experiment cfg-ones overrides 10 10 names)
 

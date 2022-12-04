@@ -19,28 +19,28 @@
 (def pop-size 100)
 
 (def rast-cfg
-  #:chickn.core{:chromo-gen   #(repeatedly rastrigin-vars rast-rnd)
-                :pop-size     pop-size
-                :solved?      util/noop
-                :monitor      util/noop
-                :fitness      fitness
-                :comparator   chickn/lower-is-better
-                :reporter     util/simple-printer
-                :selector     #:chickn.selector{:type        :chickn.selector/roulette
-                                                :rate        0.3
-                                                :random-func rand}
-                :crossover    #:chickn.crossover{:type         :chickn.crossover/cut-crossover
-                                                 :rate         0.3
-                                                 :pointcuts    1
-                                                 :random-point math/rnd-index
-                                                 :random-func  rand
-                                                 :rand-nth     rand-nth}
-                :mutation     #:chickn.mutation{:type          :chickn.mutation/rand-mutation
-                                                 :rate          0.1
-                                                 :random-func   rand
-                                                 :mutation-func rast-rnd}
-                :reinsertion  #:chickn.reinsertion{:type :chickn.reinsertion/elitist
-                                                   :rate 0.1}})
+  #:chickn.core{:chromo-gen      #(repeatedly rastrigin-vars rast-rnd)
+                :population-size pop-size
+                :solved?         util/noop
+                :monitor         util/noop
+                :fitness         fitness
+                :comparator      chickn/lower-is-better
+                :reporter        util/simple-printer
+                :selector        #:chickn.selector{:type        :chickn.selector/roulette
+                                                   :rate        0.3
+                                                   :random-func rand}
+                :crossover       #:chickn.crossover{:type         :chickn.crossover/cut-crossover
+                                                    :rate         0.3
+                                                    :pointcuts    1
+                                                    :random-point math/rnd-index
+                                                    :random-func  rand
+                                                    :rand-nth     rand-nth}
+                :mutation        #:chickn.mutation{:type          :chickn.mutation/rand-mutation
+                                                   :rate          0.1
+                                                   :random-func   rand
+                                                   :mutation-func rast-rnd}
+                :reinsertion     #:chickn.reinsertion{:type :chickn.reinsertion/elitist
+                                                      :rate 0.1}})
 
 #_(clojure.spec.alpha/explain-data :chickn.core/config rast-cfg)
 

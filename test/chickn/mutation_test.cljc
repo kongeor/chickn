@@ -14,7 +14,7 @@
   (testing "swap mutate pop wiring"
     (with-redefs [shuffle identity]
       (let [pop (chickn.core/raw-pop->pop (partition 4 (range 16))) ;; FIXME
-            chromos (:pop pop)
+            chromos (:chromosomes pop)
             rnd-genes (val-cycle 1 3)
             cfg {}
             rf (val-cycle 0.5 0 0.5 0.5)]

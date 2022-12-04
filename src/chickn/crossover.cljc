@@ -66,8 +66,8 @@
 
 (defmethod ->crossover ::cut-crossover [{:keys [::rand-nth ::rate] :as cfg}]
   (let [cross (cut-crossover cfg)]
-    (fn [{:keys [:chickn.core/pop-size] :as cfg} pop]
-      (let [n (int (* pop-size rate))]
+    (fn [{:keys [:chickn.core/population-size] :as cfg} pop]
+      (let [n (int (* population-size rate))]
         (->>
           (let [pairs (/ (if (= (mod n 2) 0) n (inc n)) 2)]
             (take
@@ -80,8 +80,8 @@
 
 (defmethod ->crossover ::ordered-crossover [{:keys [::rand-nth ::rate] :as cfg}]
   (let [cross (ordered-crossover cfg)]
-    (fn [{:keys [:chickn.core/pop-size] :as cfg} chromos]
-      (let [n (int (* pop-size rate))]
+    (fn [{:keys [:chickn.core/population-size] :as cfg} chromos]
+      (let [n (int (* population-size rate))]
         (->>
           (repeatedly
             #(cross (rand-nth chromos) (rand-nth chromos)))
@@ -97,7 +97,7 @@
     ((->crossover {::type ::cut-crossover
                   ::rate 0.3
                   ::pointcuts 1
-                  ::random-point rand-nth}) pop {:chickn.core/pop-size 10 :chickn.core/elitism-rate 0.56})))
+                  ::random-point rand-nth}) pop {:chickn.core/population-size 10 :chickn.core/elitism-rate 0.56})))
 
 (comment
   (let [pop [{:genes [0 1 2 3] :fitness 1}

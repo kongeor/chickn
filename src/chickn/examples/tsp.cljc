@@ -41,25 +41,25 @@
 
 
 (comment
-  (let [cfg #:chickn.core{:chromo-gen  #(shuffle cities)
-                          :pop-size    30
-                          :solved?     noop
-                          :monitor     noop
-                          :fitness     fitness
-                          :comparator  chickn/lower-is-better
-                          :reporter    simple-printer
-                          :selector    #:chickn.selector{:type        :chickn.selector/roulette
-                                                         :elit        true
-                                                         :rate        0.3
-                                                         :random-func rand}
-                          :crossover   #:chickn.crossover{:type         :chickn.crossover/ordered-crossover
-                                                          :rate         0.3
-                                                          :random-point rnd-index
-                                                          :rand-nth     rand-nth}
-                          :mutation    #:chickn.mutation{:type        :chickn.mutation/swap-mutation
-                                                         :rate        0.01
-                                                         :rand-nth    rnd-index
-                                                         :random-func rand}
-                          :reinsertion #:chickn.reinsertion{:type :chickn.reinsertion/elitist
-                                                            :rate 0.1}}]
+  (let [cfg #:chickn.core{:chromo-gen      #(shuffle cities)
+                          :population-size 30
+                          :solved?         noop
+                          :monitor         noop
+                          :fitness         fitness
+                          :comparator      chickn/lower-is-better
+                          :reporter        simple-printer
+                          :selector        #:chickn.selector{:type        :chickn.selector/roulette
+                                                             :elit        true
+                                                             :rate        0.3
+                                                             :random-func rand}
+                          :crossover       #:chickn.crossover{:type         :chickn.crossover/ordered-crossover
+                                                              :rate         0.3
+                                                              :random-point rnd-index
+                                                              :rand-nth     rand-nth}
+                          :mutation        #:chickn.mutation{:type        :chickn.mutation/swap-mutation
+                                                             :rate        0.01
+                                                             :rand-nth    rnd-index
+                                                             :random-func rand}
+                          :reinsertion     #:chickn.reinsertion{:type :chickn.reinsertion/elitist
+                                                                :rate 0.1}}]
     (select-keys (chickn/init-and-evolve cfg 100) [:iteration :time :best-chromo])))

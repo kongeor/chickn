@@ -10,7 +10,7 @@
                    {:genes [4 5 2 3] :fitness 3}
                    {:genes [8 9 2 3] :fitness 2}
                    {:genes [12 13 2 3] :fitness 1}]
-          cfg {:chickn.core/comparator chickn.core/higher-is-better :chickn.core/pop-size 4}
+          cfg {:chickn.core/comparator chickn.core/higher-is-better :chickn.core/population-size 4}
           make-roulette (fn [random-func]
                           (->selector #:chickn.selector{:type         :chickn.selector/roulette
                                                          :random-func random-func
@@ -33,7 +33,7 @@
                {:genes [8 9 2 3] :fitness 2}
                {:genes [4 5 2 3] :fitness 3}
                {:genes [0 1 2 3] :fitness 4}]
-          cfg {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4}
+          cfg {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/population-size 4}
           make-roulette (fn [random-func]
                           (->selector #:chickn.selector{:type         :chickn.selector/roulette
                                                          :random-func random-func
@@ -65,14 +65,14 @@
                                                    :tour-size   3
                                                    :rate        0.5})]
     (testing "tournament higher"
-      (let [cfg {:chickn.core/comparator chickn.core/higher-is-better :chickn.core/pop-size 4}]
+      (let [cfg {:chickn.core/comparator chickn.core/higher-is-better :chickn.core/population-size 4}]
         (is (= {:parents [{:genes [0 1 2 3] :fitness 4}
                           {:genes [4 5 2 3] :fitness 3}]
                 :leftover [{:genes [8 9 2 3] :fitness 2}
                            {:genes [12 13 2 3] :fitness 1}]}
                (selector cfg pop)))))
     (testing "tournament lower"
-      (let [cfg {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4}]
+      (let [cfg {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/population-size 4}]
         (is (= {:parents [{:genes [8 9 2 3] :fitness 2}
                           {:genes [12 13 2 3] :fitness 1}]
                 :leftover [{:genes [0 1 2 3] :fitness 4}
@@ -82,7 +82,7 @@
       (let [selected ((->selector #:chickn.selector{:type       :chickn.selector/tournament
                                                      :tour-size 3
                                                      :rate      0.75})
-                      {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4} pop)]
+                      {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/population-size 4} pop)]
         (is (= 3 (-> selected :parents count)))))
     (testing "not allowing duplicates"
       (let [pop [{:genes [0 1 2 3] :fitness 1}
@@ -95,7 +95,7 @@
                                                      :random-func random-func
                                                      :rate        0.75
                                                      :duplicates? false})
-                      {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4} pop)]
+                      {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/population-size 4} pop)]
         (is (= 3 (-> selected :parents set count)))))))
 
 (deftest duplicate-test
@@ -108,7 +108,7 @@
                                         :tour-size   3
                                         :random-func random-func
                                         :rate        0.75}
-        cfg {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4}]
+        cfg {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/population-size 4}]
     (testing "default - allowing duplicates"
       (let [selected ((->selector selector-cfg)
                       cfg pop)]

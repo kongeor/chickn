@@ -3,9 +3,9 @@
             [chickn.core :refer [eval-pop raw-pop->pop]]))
 
 (deftest eval-pop-test
-  (let [pop {:pop [{:genes [0 0 1 1] :age 1}
-                   {:genes [0 0 1 2] :age 2}
-                   {:genes [0 1 0 0]}]}
+  (let [pop {:chromosomes [{:genes [0 0 1 1] :age 1}
+                           {:genes [0 0 1 2] :age 2}
+                           {:genes [0 1 0 0]}]}
         cfg {:chickn.core/fitness (fn [genes] (apply + genes))
              :chickn.core/monitor chickn.util/noop
              :chickn.core/comparator chickn.core/higher-is-better}]
@@ -15,17 +15,17 @@
             :best-fitness 3
             :iteration 1
             :total-fitness 6
-            :best-chromo [0 0 1 2]
-            :pop [{:genes [0 0 1 2]
-                   :fitness 3
-                   :age 3}
-                  {:genes [0 0 1 1]
-                   :fitness 2
-                   :age 2}
-                  {:genes [0 1 0 0]
-                   :fitness 1
-                   :age 1}]}
-           (dissoc (eval-pop cfg pop) :time)))))
+            :best-chromosome [0 0 1 2]
+            :chromosomes [{:genes [0 0 1 2]
+                           :fitness 3
+                           :age 3}
+                          {:genes [0 0 1 1]
+                           :fitness 2
+                           :age 2}
+                          {:genes [0 1 0 0]
+                           :fitness 1
+                           :age 1}]}
+          (dissoc (eval-pop cfg pop) :time)))))
 
 #_(deftest crossover-test
   (testing "one pointcut"
@@ -120,10 +120,10 @@
                [0 0 1 2]
                [0 0 0 0]
                [0 1 0 0]]]
-      (is (= {:pop [{:genes [2 2 0 0] :fitness 0 :age 0}
-                    {:genes [0 0 1 2] :fitness 0 :age 0}
-                    {:genes [0 0 0 0] :fitness 0 :age 0}
-                    {:genes [0 1 0 0] :fitness 0 :age 0}]}
+      (is (= {:chromosomes [{:genes [2 2 0 0] :fitness 0 :age 0}
+                            {:genes [0 0 1 2] :fitness 0 :age 0}
+                            {:genes [0 0 0 0] :fitness 0 :age 0}
+                            {:genes [0 1 0 0] :fitness 0 :age 0}]}
              (raw-pop->pop pop))))))
 
 #_(deftest gen-pop-test

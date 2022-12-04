@@ -72,8 +72,8 @@
 
 (defn roulette
   [{:keys [::rate] :as selector-cfg}]
-  (fn [{:keys [:chickn.core/pop-size] :as cfg} chromos]
-    (let [n        (int (* pop-size rate))
+  (fn [{:keys [:chickn.core/population-size] :as cfg} chromos]
+    (let [n        (int (* population-size rate))
           roulette-f (partial -roulette cfg selector-cfg chromos)
           parents (repeatedly n roulette-f)
           leftover (identical-diff chromos parents)]
@@ -101,8 +101,8 @@
         (inc i)))))
 
 (defn tournament [{:keys [::rate ::duplicates? ::duplicate-checks] :or {duplicates? true duplicate-checks 10000} :as selector-cfg}]
-  (fn [{:keys [:chickn.core/pop-size] :as cfg} chromos]
-    (let [n        (int (* pop-size rate))
+  (fn [{:keys [:chickn.core/population-size] :as cfg} chromos]
+    (let [n        (int (* population-size rate))
           tour-f   (partial -tour cfg selector-cfg chromos)
           parents  (if duplicates?
                      (repeatedly n tour-f)
@@ -141,7 +141,7 @@
              {:genes [12 13 2 3] :fitness 8}]
         random-func (chickn.util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75)]
     (with-redefs [shuffle identity]
-      ((->selector {::type ::tournament ::random-func random-func ::tour-size 3 ::rate 0.75 ::duplicates? false}) {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4} pop))))
+      ((->selector {::type ::tournament ::random-func random-func ::tour-size 3 ::rate 0.75 ::duplicates? false}) {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/population-size 4} pop))))
 
 (comment
   (let [pop [{:genes [0 1 2 3] :fitness 1}
@@ -150,7 +150,7 @@
              {:genes [12 13 2 3] :fitness 8}]
         random-func (chickn.util/val-cycle 0.0 0.25 0.5 0.25 0.5 0.75 0.8)]
     ((->selector {::type ::tournament ::random-func random-func
-                  ::tour-size 3 ::rate 0.75 ::duplicates? false}) {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/pop-size 4} pop)))
+                  ::tour-size 3 ::rate 0.75 ::duplicates? false}) {:chickn.core/comparator chickn.core/lower-is-better :chickn.core/population-size 4} pop)))
 
 ;; --------
 ;; Playground

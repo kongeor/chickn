@@ -17,7 +17,7 @@
               {:genes [1 1 2 2] :fitness 5 :age 0}
               {:genes [2 2 1 1] :fitness 5 :age 0}]
              ((elitist {:chickn.reinsertion/rate 0.5})
-              {:chickn.core/comparator higher-is-better :chickn.core/pop-size 4}
+              {:chickn.core/comparator higher-is-better :chickn.core/population-size 4}
               {:parents   parents
                :offspring offspring
                :leftover  leftover})))))

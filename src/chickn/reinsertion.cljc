@@ -26,7 +26,7 @@
 
 ;; TODO this should accept a rate and we should adjust the pop size later
 (defn elitist [{:keys [::rate] :as cfg}]
-  (fn [{:keys [:chickn.core/comparator :chickn.core/pop-size]}
+  (fn [{:keys [:chickn.core/comparator :chickn.core/population-size]}
        {:keys [parents offspring leftover]}]
     (let [old (concat parents leftover)
           n   (int (* (count old) rate))

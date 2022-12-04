@@ -25,9 +25,9 @@
   (testing "crossover pop wiring"
     (with-redefs [shuffle identity]                         ;; TODO check if needed
       (let [pop (chickn.core/raw-pop->pop (partition 4 (range 16))) ;; FIXME
-            chromos (:pop pop)
+            chromos (:chromosomes pop)
             rnd-chromos (val-cycle (first chromos) (second chromos) (nth chromos 2) (nth chromos 3))
-            cfg {:chickn.core/pop-size 4}
+            cfg {:chickn.core/population-size 4}
             rf (constantly 0)]
         (is (= [{:genes [0 1 6 7] :fitness 0 :age 0}
                 {:genes [4 5 2 3] :fitness 0 :age 0}
@@ -47,18 +47,18 @@
                                            [2 3 4 5 6 1]
                                            [4 1 5 3 2 6]
                                            [6 3 2 1 4 5]])
-            chromos (:pop pop)
+            chromos (:chromosomes pop)
             rnd-chromos (val-cycle (first chromos) (second chromos)
                                    (nth chromos 2) (nth chromos 3)
                                    (second chromos) (first chromos)
                                    (nth chromos 3) (nth chromos 2))
-            cfg {:chickn.core/pop-size 4}
+            cfg {:chickn.core/population-size 4}
             rf (val-cycle 2 4 1 3)]
         (is (= [{:genes [6 1 3 4 2 5] :fitness 0 :age 0}
                 {:genes [4 1 5 6 3 2] :fitness 0 :age 0}
                 {:genes [6 1 4 5 2 3] :fitness 0 :age 0}
                 {:genes [6 3 2 4 1 5] :fitness 0 :age 0}]
-               ((->crossover #:chickn.crossover{:type         :chickn.crossover/ordered-crossover
+               ((->crossover #:chickn.crossover{:type        :chickn.crossover/ordered-crossover
                                                :rate         1.0
                                                :pointcuts    1
                                                :random-point rf

@@ -52,29 +52,29 @@
   (println))
 
 (defn queens [n]
-  (let [cfg #:chickn.core{:chromo-gen  #(shuffle (range n))
-                          :pop-size    20
-                          :solved?     (fn [_ {:keys [best-chromo]}]
-                                         (= (fitness best-chromo) 0))
-                          :fitness     fitness
-                          :comparator  chickn/lower-is-better
+  (let [cfg #:chickn.core{:chromo-gen      #(shuffle (range n))
+                          :population-size 20
+                          :solved?         (fn [_ {:keys [best-chromo]}]
+                                             (= (fitness best-chromo) 0))
+                          :fitness         fitness
+                          :comparator      chickn/lower-is-better
                           ; :reporter    printer
-                          :monitor     util/noop
-                          :selector    #:chickn.selector{:type        :chickn.selector/tournament
-                                                         :rate        0.3
-                                                         :random-func rand
-                                                         :tour-size   5
-                                                         :duplicates? false}
-                          :crossover   #:chickn.crossover{:type         :chickn.crossover/ordered-crossover
-                                                          :rate         0.5
-                                                          :random-point math/rnd-index
-                                                          :rand-nth     rand-nth}
-                          :mutation    #:chickn.mutation{:type        :chickn.mutation/swap-mutation
-                                                         :rate        0.7
-                                                         :rand-nth    math/rnd-index
-                                                         :random-func rand}
-                          :reinsertion #:chickn.reinsertion{:type :chickn.reinsertion/elitist
-                                                            :rate 0.1}}
+                          :monitor         util/noop
+                          :selector        #:chickn.selector{:type        :chickn.selector/tournament
+                                                             :rate        0.3
+                                                             :random-func rand
+                                                             :tour-size   5
+                                                             :duplicates? false}
+                          :crossover       #:chickn.crossover{:type         :chickn.crossover/ordered-crossover
+                                                              :rate         0.5
+                                                              :random-point math/rnd-index
+                                                              :rand-nth     rand-nth}
+                          :mutation        #:chickn.mutation{:type        :chickn.mutation/swap-mutation
+                                                             :rate        0.7
+                                                             :rand-nth    math/rnd-index
+                                                             :random-func rand}
+                          :reinsertion     #:chickn.reinsertion{:type :chickn.reinsertion/elitist
+                                                                :rate 0.1}}
         result (chickn/init-and-evolve cfg 2000)]
     (if (:solved? result)
       (println "solved after" (:iteration result) "iterations")
