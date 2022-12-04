@@ -102,7 +102,7 @@ It's time to fire the process!
 We are `dissoc`ing the `:population` as it will include the entire population and the output can
 be quite verbose. 
 
-You can find the code for this example here [src/chickn/examples/hello_world.cljc](chickn/examples/hello_world.cljc).
+You can find the code for this example here [src/chickn/examples/hello_world.cljc](src/chickn/examples/hello_world.cljc).
 
 ## Examples
 
