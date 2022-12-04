@@ -2,14 +2,14 @@
 
 ## [Scheduled]
 
-- Update README
 - Make tournament selector default
 - Fix roulette
 - Multiple pointcut support
 
 
-## [Unreleased]
+## [0.1.99] - 2022-12-04
 
+- Updated README
 - Reinsertion
 - Simplified evolution process
 - Process supports for one selector, one or none crossover and one or none mutation
