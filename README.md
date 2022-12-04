@@ -1,6 +1,7 @@
 # chickn
 
 ![clojure.yml](https://github.com/kongeor/chickn/actions/workflows/clojure.yml/badge.svg)
+[![Clojars Project](https://img.shields.io/clojars/v/com.github.kongeor/chickn.svg)](https://clojars.org/com.github.kongeor/chickn)
 
 clojure(script) genetic algorithms toolkit
 
@@ -10,13 +11,13 @@ clojure(script) genetic algorithms toolkit
 Add the following dependency to your `project.clj`:
 
 ```
-[com.github.kongeor/chickn "0.1.87"]
+[com.github.kongeor/chickn "0.1.99"]
 ```
 
 or: 
 
 ```
-com.github.kongeor/chickn {:mvn/version "0.1.87"}
+com.github.kongeor/chickn {:mvn/version "0.1.99"}
 ```
 
 if you are using `deps.edn`
@@ -101,11 +102,11 @@ It's time to fire the process!
 We are `dissoc`ing the `:population` as it will include the entire population and the output can
 be quite verbose. 
 
-You can find the code for this example here [`src/chickn/examples/hello_world.cljc`](`chickn/example/hello_world.cljc`).
+You can find the code for this example here [src/chickn/examples/hello_world.cljc](chickn/examples/hello_world.cljc).
 
 ## Examples
 
-[Examples package](/src/chickn/examples) has a few code examples.
+[Examples namespace](/src/chickn/examples) has a few code examples.
 
 [Using chickn from cljs](https://kongeor.github.io/chicknism/) for solving the
 Traveling Salesman Problem.
