@@ -3,7 +3,7 @@
 ![clojure.yml](https://github.com/kongeor/chickn/actions/workflows/clojure.yml/badge.svg)
 [![Clojars Project](https://img.shields.io/clojars/v/com.github.kongeor/chickn.svg)](https://clojars.org/com.github.kongeor/chickn)
 
-clojure(script) genetic algorithms toolkit
+clojure(script) genetic algorithms library
 
 
 ## Install
@@ -75,8 +75,8 @@ but for this example it should be all right.
            :mutation-func one-or-zero})
 ```
 
-`Chickn` comes with a default config, but some customize is needed (`chromo-gen` and `fitness` have to be provided).
-Here we are also specifying the `:solved?` which was explained above, we are muting the `:reporter` to avoid getting
+`Chickn` comes with a default config, but some customization is needed (`chromo-gen` and `fitness` have to be provided).
+Here we are also specifying the `:solved?` which was explained above. We are muting the `:reporter` to avoid getting
 prints, setting up our mutation operator, and setting that solutions with higher scores are preferred.
 
 ```clojure
@@ -104,6 +104,7 @@ be quite verbose.
 
 You can find the code for this example here [src/chickn/examples/hello_world.cljc](src/chickn/examples/hello_world.cljc).
 
+
 ## Examples
 
 [Examples namespace](/src/chickn/examples) has a few code examples.
@@ -111,14 +112,17 @@ You can find the code for this example here [src/chickn/examples/hello_world.clj
 [Using chickn from cljs](https://kongeor.github.io/chicknism/) for solving the
 Traveling Salesman Problem.
 
+[Evolduo](https://github.com/kongeor/evolduo-app) is using Chickn for evolving musical phrases.
+
 
 ## Project Status
 
 Chickn should be considered alpha quality software.
 
+
 ## License
 
-Copyright © 2018-2022 Kostas Georgiadis
+Copyright © 2018-2023 Kostas Georgiadis
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
