@@ -1,4 +1,4 @@
-{:deps {}
+{:deps {org.clojure/clojure {:mvn/version "1.11.1"}}
  :aliases
  {:test      {:extra-paths ["test"]
               :extra-deps  {io.github.cognitect-labs/test-runner
@@ -12,5 +12,5 @@
                              :sha     "fa604e9e5f4e74a544958dfdf4c5ccc2a4b2c916"}}
               :main-opts   ["-m" "cljs-test-runner.main"]}
   :build     {:deps       {io.github.seancorfield/build-clj
-                           {:git/tag "v0.8.0" :git/sha "9bd8b8a"}}
+                           {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
               :ns-default build}}}
