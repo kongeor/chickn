@@ -11,13 +11,13 @@ clojure(script) genetic algorithms library
 Add the following dependency to your `project.clj`:
 
 ```
-[com.github.kongeor/chickn "0.1.99"]
+[com.github.kongeor/chickn "0.1.105"]
 ```
 
 or: 
 
 ```
-com.github.kongeor/chickn {:mvn/version "0.1.99"}
+com.github.kongeor/chickn {:mvn/version "0.1.105"}
 ```
 
 if you are using `deps.edn`

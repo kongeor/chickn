@@ -6,6 +6,8 @@
 - Fix roulette
 - Multiple pointcut support
 
+## [0.1.105] - 2024-02-04
+- Bumped deps and housekeeping
 
 ## [0.1.99] - 2022-12-04
 
