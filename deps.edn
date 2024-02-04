@@ -11,11 +11,10 @@
                             {:git/url "https://github.com/kongeor/cljs-test-runner"
                              :sha     "fa604e9e5f4e74a544958dfdf4c5ccc2a4b2c916"}}
               :main-opts   ["-m" "cljs-test-runner.main"]}
-  :build     {:deps       {io.github.clojure/tools.build
-                           {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
+  :build     {:deps       {io.github.clojure/tools.build {:mvn/version "0.9.6"}}
               :ns-default build}
-  :deploy {:extra-deps {slipset/deps-deploy {:mvn/version "0.1.105"}}
+  :deploy {:extra-deps {slipset/deps-deploy {:mvn/version "RELEASE"}}
            :exec-fn deps-deploy.deps-deploy/deploy
            :exec-args {:installer :remote
-                       :sign-releases? true
+                       :sign-releases? false
                        :artifact "target/chickn-0.1.105.jar"}}}}

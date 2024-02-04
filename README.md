@@ -3,7 +3,7 @@
 ![clojure.yml](https://github.com/kongeor/chickn/actions/workflows/clojure.yml/badge.svg)
 [![Clojars Project](https://img.shields.io/clojars/v/com.github.kongeor/chickn.svg)](https://clojars.org/com.github.kongeor/chickn)
 
-clojure(script) genetic algorithms library
+Evolutionary algorithms library for Clojure(script)
 
 
 ## Install
@@ -122,7 +122,7 @@ Chickn should be considered alpha quality software.
 
 ## License
 
-Copyright © 2018-2023 Kostas Georgiadis
+Copyright © 2018-2024 Kostas Georgiadis
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
